@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+whisper_transcription_env/
+
+# Modelos de IA (baixar separadamente — ver README para instruções)
+whisper-cpp-models/
+sherpa-onnx-models/
+
+# Áudio e vídeo (arquivos de entrada e teste)
+*.wav
+*.mp3
+*.mp4
+*.m4a
+*.mov
+
+# Outputs de transcrição e arquivos temporários
+temp_*
+*_diarized.txt
+*_optimized.txt
+*_transcrito.txt
+test_sherpa_result.txt
+
+# Logs de execução
+*.log
+transcribe_log.txt
+
+# Scripts em espera (ficam no Mac, não no GitHub)
+_archive/
+
+# Fotos e arquivos pessoais
+Fotos Azayaka/
+
+# macOS
+.DS_Store
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*
