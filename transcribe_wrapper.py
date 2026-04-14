@@ -190,7 +190,7 @@ def main():
             # NOVA ESTRUTURA: pasta organizada em Downloads/Transcricoes/nome_video/
             base_output_dir = Path.home() / "Downloads" / "Transcricoes"
             video_folder = base_output_dir / video_path.stem
-            output_file = video_folder / f"{video_path.stem}_transcrito.txt"
+            output_file = video_folder / f"{video_path.stem}_transcrito.md"
 
             if output_file.exists():
                 # Dialog de sucesso com tempo

@@ -4,6 +4,31 @@
 
 ---
 
+## [2026-04-14] - Bugfix: wrapper ainda procurava arquivo .txt após migração para .md
+
+### PROBLEMA
+Após a migração do formato de saída para `.md`, o app Automator exibia "Processo concluído mas arquivo não encontrado" mesmo com a transcrição gerada corretamente.
+
+### CAUSA
+`transcribe_wrapper.py` verifica se o arquivo de saída existe para decidir se mostra dialog de sucesso ou erro. A extensão nessa verificação não foi atualizada junto com a mudança no script principal.
+
+```python
+# transcribe_wrapper.py — linha 193 (antes)
+output_file = video_folder / f"{video_path.stem}_transcrito.txt"  # extensão errada
+```
+
+### SOLUÇÃO
+Atualizada a extensão na verificação do wrapper:
+
+```python
+output_file = video_folder / f"{video_path.stem}_transcrito.md"
+```
+
+### LIÇÃO APRENDIDA
+Ao mudar extensão de saída, verificar todos os arquivos que referenciam o caminho do output — não apenas o script que gera o arquivo.
+
+---
+
 ## [2026-04-14] - Formato de saída alterado de TXT para Markdown
 
 ### OBJETIVO
