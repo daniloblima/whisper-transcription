@@ -4,6 +4,46 @@
 
 ---
 
+## [2026-04-14] - Formato de saída alterado de TXT para Markdown
+
+### OBJETIVO
+Melhorar a legibilidade das transcrições em editores e visualizadores de markdown.
+
+### SOLUÇÃO
+Dois pontos alterados em `transcribe_complete.py`:
+
+1. Extensão do arquivo de saída: `.txt` → `.md`
+2. Função `save_final_output()`: reescrita para gerar markdown estruturado.
+
+Formato anterior (TXT):
+```
+TRANSCRIÇÃO COM DIARIZAÇÃO
+================================================================================
+
+[0:00:05] SPEAKER_0: Boa tarde, pessoal.
+[0:00:08] SPEAKER_0: Hoje vamos falar sobre...
+[0:00:12] SPEAKER_1: Obrigado pelo convite.
+```
+
+Formato novo (Markdown):
+```markdown
+# Transcrição com Diarização
+
+**SPEAKER_0**
+
+`[0:00:05]` Boa tarde, pessoal.
+
+`[0:00:08]` Hoje vamos falar sobre...
+
+**SPEAKER_1**
+
+`[0:00:12]` Obrigado pelo convite.
+```
+
+Nome do speaker exibido uma vez por bloco contínuo de fala — só repete quando há troca de speaker.
+
+---
+
 ## [2026-04-14] - Correção: idioma hardcoded causava transcrição em português de áudios em inglês
 
 ### OBJETIVO

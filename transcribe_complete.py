@@ -561,16 +561,19 @@ def find_speaker_at_time(timestamp, diarization_segments):
     return closest_speaker
 
 def save_final_output(segments, output_file):
-    """Salva resultado final formatado"""
+    """Salva resultado final formatado em markdown"""
     with open(output_file, 'w', encoding='utf-8') as f:
-        f.write("TRANSCRIÇÃO COM DIARIZAÇÃO\n")
-        f.write("="*80 + "\n\n")
+        f.write("# Transcrição com Diarização\n\n")
 
+        prev_speaker = None
         for seg in segments:
             timestamp = format_timestamp(seg['start'])
             speaker = f"SPEAKER_{seg['speaker']}"
             text = seg['text']
-            f.write(f"[{timestamp}] {speaker}: {text}\n")
+            if speaker != prev_speaker:
+                f.write(f"\n**{speaker}**\n\n")
+                prev_speaker = speaker
+            f.write(f"`[{timestamp}]` {text}\n\n")
 
     print(f"\n✅ Resultado salvo em: {output_file}")
 
@@ -649,7 +652,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Salvar resultado na pasta organizada
-    output_file = output_dir / f"{input_path.stem}_transcrito.txt"
+    output_file = output_dir / f"{input_path.stem}_transcrito.md"
     save_final_output(final_segments, output_file)
 
     # Limpar arquivo temporário
