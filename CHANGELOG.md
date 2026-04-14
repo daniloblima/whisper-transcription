@@ -4,6 +4,76 @@
 
 ---
 
+## [2026-04-14] - Correção: idioma hardcoded causava transcrição em português de áudios em inglês
+
+### OBJETIVO
+Garantir que transcrições em inglês (ou qualquer outro idioma) saiam no idioma original do áudio, sem forçar português.
+
+### PROBLEMA
+Transcrições de áudios em inglês estavam saindo em português. O comportamento esperado é transcrever sempre no idioma original do áudio.
+
+### ANÁLISE / ROOT CAUSE
+O parâmetro `-l pt` estava hardcoded em três lugares do `transcribe_complete.py`:
+
+1. `test_stream_content()` — linha que testa qual stream de áudio tem mais conteúdo: usava `-l pt` mesmo sendo apenas um teste auxiliar.
+2. `transcribe_with_whisper()` — assinatura da função: `language='pt'` como padrão.
+3. `main()` — argumento CLI `--language`: padrão `'pt'`.
+
+Quando o `transcribe_wrapper.py` chama o script sem passar `--language`, o padrão `pt` era aplicado, forçando o Whisper a interpretar tudo como português — inclusive áudios em inglês.
+
+### SOLUÇÃO
+Alterados os três pontos para usar `'auto'` como padrão:
+
+```python
+# test_stream_content() — linha 124
+'-l', 'auto',   # era '-l', 'pt'
+
+# transcribe_with_whisper() — assinatura
+def transcribe_with_whisper(audio_path, model_name='medium', language='auto'):  # era 'pt'
+
+# main() — argparse
+parser.add_argument('--language', default='auto', ...)  # era 'pt'
+```
+
+Com `auto`, o Whisper detecta o idioma do áudio automaticamente. Para forçar um idioma específico, ainda é possível via `--language pt` ou `--language en`.
+
+### LIÇÕES APRENDIDAS
+- Nunca definir idioma padrão como valor fixo em ferramentas de transcrição de uso geral.
+- `auto` deve ser o padrão; idioma explícito é opção, não default.
+- O wrapper não repassa parâmetros ao script principal — qualquer default errado no script principal afeta 100% das transcrições feitas via Automator.
+
+---
+
+## [2026-04-14] - Limpeza da pasta do projeto
+
+### OBJETIVO
+Remover arquivos temporários e de teste acumulados durante o desenvolvimento (novembro-dezembro/2025) que já não têm utilidade.
+
+### ARQUIVOS REMOVIDOS
+| Arquivo | Tamanho | Motivo |
+|---|---|---|
+| `temp_audio.wav` | 371 MB | WAV temporário de sessão de desenvolvimento |
+| `temp_audio_15min.wav` | 27 MB | WAV temporário de teste |
+| `temp_audio_10min.wav` | 18 MB | WAV temporário de teste |
+| `temp_audio_5min.wav` | 9,2 MB | WAV temporário de teste |
+| `temp_audio_clean_648_1000.wav` | 5,9 MB | WAV temporário de teste |
+| `test_video_10min.mp4` | 20 MB | Vídeo de teste de desenvolvimento |
+| `test_10sec.mp4` | 353 KB | Vídeo de teste de desenvolvimento |
+| `temp_audio_*_diarized.txt` (3 arquivos) | ~8 KB | Saídas de teste de diarização |
+| `temp_audio_*_optimized.txt` (3 arquivos) | ~7 KB | Saídas de teste com pós-processamento |
+| `test_sherpa_result.txt` | 19 KB | Resultado de teste do Sherpa-ONNX |
+| `test_video_10min_transcrito.txt` | 12 KB | Transcrição de teste |
+| `__pycache__/` | — | Cache Python gerado automaticamente |
+
+Total liberado: ~460 MB.
+
+### ARQUIVOS MANTIDOS
+- `applescript_debug.log` e `transcribe_log.txt` — logs ativos, escritos pelo wrapper em produção.
+- `_archive/` — scripts antigos de desenvolvimento (referência histórica).
+- `Fotos Azayaka/` — imagens de referência do gravador Azayaka.
+
+---
+
 ## [2026-01-19] - SOLUÇÃO DEFINITIVA: Mix de Streams para Vídeos do Azayaka ✅
 
 ### 🎯 OBJETIVO

@@ -121,7 +121,7 @@ def test_stream_content(video_path, stream_index, whisper_model_path, test_durat
             '/opt/homebrew/bin/whisper-cli',
             '-m', whisper_model_path,
             '-f', tmp_wav,
-            '-l', 'pt',
+            '-l', 'auto',
             '-osrt',
             '-of', tmp_srt_base
         ]
@@ -267,7 +267,7 @@ def extract_audio(video_path, output_wav, whisper_model_path=None):
     print(f"   ✅ Áudio extraído: {file_size:.1f} MB")
     return True
 
-def transcribe_with_whisper(audio_path, model_name='medium', language='pt'):
+def transcribe_with_whisper(audio_path, model_name='medium', language='auto'):
     """Transcreve áudio usando Whisper.cpp"""
     home = Path.home()
     model_path = home / f"Experimentos/whisper-transcription/whisper-cpp-models/ggml-{model_name}.bin"
@@ -581,7 +581,7 @@ def main():
                        help='Modelo Whisper (padrão: medium)')
     parser.add_argument('--threshold', type=float, default=0.75,
                        help='Threshold para diarização (padrão: 0.75)')
-    parser.add_argument('--language', default='pt', help='Idioma (padrão: pt)')
+    parser.add_argument('--language', default='auto', help='Idioma para transcrição (padrão: auto — detecção automática)')
     parser.add_argument('--output-dir', type=str, default=None,
                        help='Diretório de saída (padrão: ~/Downloads/Transcricoes/nome_video/)')
 
