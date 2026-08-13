@@ -7,8 +7,10 @@ Uso:
     python3 transcribe_complete.py <video_ou_audio>
     python3 transcribe_complete.py <video_ou_audio> --threshold 0.75
     python3 transcribe_complete.py <video_ou_audio> --model medium
+    python3 transcribe_complete.py <video_ou_audio> --sem-glossario
 
-Saída: arquivo .txt no formato [HH:MM:SS] SPEAKER_X: texto transcrito
+Saída: arquivo .md no formato [HH:MM:SS] SPEAKER_X: texto transcrito,
+já com os termos do glossario.json corrigidos.
 """
 
 import sys
@@ -23,6 +25,16 @@ from datetime import timedelta
 from collections import Counter
 import argparse
 import time
+
+# Correção determinística de termos (passo 5). Import tolerante a falha:
+# o módulo é opcional e a transcrição nunca pode morrer por causa dele.
+try:
+    from corrigir_termos import corrigir_arquivo
+    GLOSSARIO_DISPONIVEL = True
+except ImportError as e:
+    print(f"⚠️  corrigir_termos.py não pôde ser importado ({e}).")
+    print(f"⚠️  A transcrição roda normalmente, sem correção de termos.")
+    GLOSSARIO_DISPONIVEL = False
 
 def print_step(step_num, total_steps, message):
     """Imprime mensagem de progresso formatada"""
@@ -587,6 +599,10 @@ def main():
     parser.add_argument('--language', default='auto', help='Idioma para transcrição (padrão: auto — detecção automática)')
     parser.add_argument('--output-dir', type=str, default=None,
                        help='Diretório de saída (padrão: ~/Downloads/Transcricoes/nome_video/)')
+    parser.add_argument('--sem-glossario', action='store_true',
+                       help='Pula a correção automática de termos (passo 5)')
+    parser.add_argument('--glossario', type=str, default=None,
+                       help='Caminho de um glossário alternativo (padrão: glossario.json do projeto)')
 
     args = parser.parse_args()
 
@@ -605,7 +621,7 @@ def main():
     print("="*80)
 
     # Passo 1: Extrair áudio
-    print_step(1, 4, "Extraindo áudio")
+    print_step(1, 5, "Extraindo áudio")
     temp_audio = tempfile.mktemp(suffix='.wav', prefix='audio_')
     # Construir caminho do modelo Whisper para teste de streams
     home = Path.home()
@@ -614,7 +630,7 @@ def main():
         sys.exit(1)
 
     # Passo 2: Transcrever
-    print_step(2, 4, "Transcrevendo áudio com Whisper")
+    print_step(2, 5, "Transcrevendo áudio com Whisper")
     transcription_lines = transcribe_with_whisper(temp_audio, args.model, args.language)
     if not transcription_lines:
         os.remove(temp_audio)
@@ -624,7 +640,7 @@ def main():
     print(f"   📝 {len(transcription_segments)} segmentos transcritos")
 
     # Passo 3: Diarizar
-    print_step(3, 4, "Identificando speakers (diarização)")
+    print_step(3, 5, "Identificando speakers (diarização)")
     diarization_segments = diarize_audio(temp_audio, args.threshold)
 
     # Se não detectar speakers (áudio muito curto), criar segmento único com speaker padrão
@@ -637,7 +653,7 @@ def main():
         diarization_segments = [(0.0, max_end, 0)]
 
     # Passo 4: Mesclar
-    print_step(4, 4, "Mesclando transcrição com diarização")
+    print_step(4, 5, "Mesclando transcrição com diarização")
     final_segments = merge_transcription_and_diarization(transcription_segments, diarization_segments)
 
     # Criar estrutura de diretórios organizada
@@ -658,13 +674,36 @@ def main():
     # Limpar arquivo temporário
     os.remove(temp_audio)
 
+    # Passo 5: Corrigir termos conhecidos do glossário
+    # Só trata erro cujo acerto é sempre o mesmo (nome próprio, sigla, marca).
+    # Erro que depende do contexto continua sendo trabalho da skill
+    # /arrumar-transcricao, rodada depois sobre este arquivo.
+    print_step(5, 5, "Corrigindo termos conhecidos (glossário)")
+    trocas = []
+    if args.sem_glossario:
+        print("   ⏭️  Pulado por --sem-glossario")
+    elif not GLOSSARIO_DISPONIVEL:
+        print("   ⏭️  Pulado: corrigir_termos.py indisponível")
+    else:
+        try:
+            trocas = corrigir_arquivo(output_file, args.glossario)
+        except Exception as e:
+            # Falha suave: a transcrição já está salva e não pode ser perdida
+            # por causa da etapa de correção.
+            print(f"   ⚠️  Correção de termos falhou ({type(e).__name__}): {e}")
+            print(f"   ⚠️  A transcrição foi salva sem essa etapa.")
+
     print("\n" + "="*80)
     print("✅ PROCESSAMENTO CONCLUÍDO!")
     print("="*80)
     print(f"📄 Arquivo de saída: {output_file}")
     print(f"📊 Total de segmentos: {len(final_segments)}")
     print(f"🎤 Speakers identificados: {len(set(seg['speaker'] for seg in final_segments))}")
+    print(f"📖 Termos corrigidos: {sum(n for _, _, n in trocas)} em {len(trocas)} termos")
     print("="*80 + "\n")
+    print("💡 Erros que dependem do contexto (nome de pessoa, termo do assunto,")
+    print("   palavra trocada por outra parecida) não são tratados aqui.")
+    print("   Para esses, rode a skill /arrumar-transcricao sobre o arquivo acima.\n")
 
 if __name__ == "__main__":
     main()

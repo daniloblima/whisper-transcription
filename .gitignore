@@ -39,3 +39,7 @@ Fotos Azayaka/
 .env
 .env.local
 .env.*
+
+# Glossário local — termos ligados a pessoas e empresas com quem trabalhamos.
+# O glossario.json público fica só com termo genérico e de organização pública.
+glossario.local.json

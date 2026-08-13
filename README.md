@@ -20,10 +20,16 @@ Sistema local completo para transcrição de áudio/vídeo com identificação d
 
 **Formatos suportados:** MP4, MOV, AVI, MKV, MP3, WAV, M4A
 
-**Resultado:** Arquivo `nome_do_video_transcrito.txt`:
+**Resultado:** Arquivo `nome_do_video_transcrito.md`, já com os termos do
+glossário corrigidos:
 ```
-[00:00:12] SPEAKER_0: Olá, bem-vindos à apresentação de hoje...
-[00:00:47] SPEAKER_1: Obrigado pela introdução, vamos começar...
+**SPEAKER_0**
+
+`[0:00:12]` Olá, bem-vindos à apresentação de hoje...
+
+**SPEAKER_1**
+
+`[0:00:47]` Obrigado pela introdução, vamos começar...
 ```
 
 ---
@@ -65,15 +71,75 @@ python3 transcribe_complete.py video.mp4 --threshold 0.65  # Mais speakers
 2. **Transcrição** - Whisper.cpp transcreve
 3. **Diarização** - Sherpa-ONNX identifica speakers
 4. **Mesclagem** - Combina transcrição + diarização
+5. **Correção de termos** - Aplica o `glossario.json`
 
 **Tempo para vídeo de 1h:** ~16-18 minutos
+
+---
+
+## ✏️ CORREÇÃO DE ERROS DO WHISPER
+
+A transcrição sai com erros, e eles têm duas naturezas diferentes. Cada uma tem
+seu tratamento.
+
+### Erro que é sempre o mesmo → automático, passo 5
+
+Nome próprio, sigla, marca e termo técnico que o Whisper deforma sempre igual.
+Corrigido sozinho em toda transcrição, sem custo e sem você pedir.
+
+| Whisper escreve | Vira |
+|---|---|
+| Minquedinho | LinkedIn |
+| Substeck | Substack |
+| Connect Lab | konekt.lab |
+| em Brapi | EMBRAPII |
+| hidralétrica | hidroelétrica |
+
+São 33 termos, extraídos das correções que já tinham sido feitas à mão.
+
+**Para adicionar um termo:** abra `glossario.json` na IDE, copie um bloco e edite.
+O próprio arquivo explica os campos no topo.
+
+**Dois arquivos, e o motivo:** este repositório é público. O `glossario.json`
+guarda termo genérico e de organização pública; nome de pessoa ou empresa com
+quem você trabalha vai para o `glossario.local.json`, que está no `.gitignore` e
+não sai da sua máquina. Mesmo formato nos dois, e o script lê os dois somados.
+Se o local não existir, tudo funciona igual.
+
+**Onde conferir o que foi trocado:** ao lado de cada transcrição nasce um
+`nome_transcrito_termos-corrigidos.md` listando cada substituição e quantas vezes.
+
+**Para pular a etapa:** `--sem-glossario`.
+
+**Para corrigir um arquivo antigo:**
+```bash
+python3 corrigir_termos.py ~/Downloads/Transcricoes/pasta/arquivo.md
+```
+
+### Erro que depende do contexto → skill `/arrumar-transcricao`
+
+Palavra comum trocada por outra palavra comum ("livro" por "líder", "lixo" por
+"lítio"), sigla curta (NP por ANP), nome de pessoa, junção de falas, diarização.
+Nenhuma regra fixa acerta isso: as duas palavras existem e só o assunto decide.
+
+Abra uma sessão de Claude Code e peça a correção do arquivo. A skill pergunta o
+tema, aceita referências, tira dúvidas antes de corrigir e, ao final, propõe os
+termos novos que merecem entrar no glossário — é assim que a correção de hoje
+poupa trabalho na próxima.
+
+A skill mora em `skill/`, dentro deste projeto, com symlink em
+`~/.claude/skills/arrumar-transcricao`.
 
 ---
 
 ## 🛠️ SCRIPTS DISPONÍVEIS
 
 ### transcribe_complete.py ⭐ (RECOMENDADO)
-Faz tudo automaticamente.
+Faz tudo automaticamente: os 5 passos, da extração de áudio à correção de termos.
+
+### corrigir_termos.py
+Aplica só o glossário, sobre um arquivo de transcrição já existente. Útil para
+recuperar transcrições antigas, feitas antes de o glossário existir.
 
 ### diarize_with_postprocessing.py
 Apenas identifica speakers (sem transcrição).
@@ -87,6 +153,9 @@ whisper-transcription/
 ├── transcribe_complete.py          ⭐ Script principal (Terminal)
 ├── transcribe_wrapper.py           🖥️ Wrapper GUI (notificações)
 ├── diarize_with_postprocessing.py  🎯 Diarização
+├── corrigir_termos.py              ✏️ Correção de termos (passo 5)
+├── glossario.json                  📖 Termos que o Whisper erra sempre igual
+├── skill/                          🧠 Skill /arrumar-transcricao
 ├── whisper_transcription_env/      📦 Python env
 ├── whisper-cpp-models/             🧠 Modelos Whisper
 ├── sherpa-onnx-models/             🎤 Modelos diarização
@@ -96,9 +165,13 @@ whisper-transcription/
 ~/Applications/
 └── TranscribeVideo.app             🎬 Droplet GUI (arrasta e solta)
 
+~/.claude/skills/
+└── arrumar-transcricao ->          🔗 symlink para skill/
+
 ~/Downloads/Transcricoes/
-└── [nome_do_video]/                📂 Saída organizada
-    └── [nome]_transcrito.txt       📄 Transcrição final
+└── [nome_do_video]/                        📂 Saída organizada
+    ├── [nome]_transcrito.md                📄 Transcrição final
+    └── [nome]_transcrito_termos-corrigidos.md  📋 O que o glossário trocou
 ```
 
 ---

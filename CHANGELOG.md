@@ -4,6 +4,144 @@
 
 ---
 
+## [2026-08-13 16:36] - Correção de termos integrada ao fluxo (passo 5) + skill trazida para o projeto
+
+### OBJETIVO
+A transcrição sai do Whisper com muitos erros, e a correção existia só como skill
+avulsa (`~/.claude/skills/arrumar-transcricao`), acionada manualmente numa sessão
+de Claude Code. Trazer essa capacidade para dentro do projeto, aproveitando os
+aprendizados das correções já feitas.
+
+### PROBLEMA
+Duas medições feitas antes de qualquer decisão de desenho:
+
+1. **Cobertura baixa.** Das 23 pastas em `~/Downloads/Transcricoes`, só 8 tinham
+   arquivo corrigido. A correção dependia do Danilo lembrar de pedir, então ~2/3
+   das transcrições ficaram como o Whisper entregou.
+2. **Aprendizado perdido.** Cada correção era redescoberta do zero. "Minquedinho"
+   (LinkedIn) foi corrigido à mão numa aula e voltaria a aparecer na seguinte.
+
+### ANÁLISE / ROOT CAUSE
+Extraí as substituições reais dos 8 pares transcrito/corrigido com `difflib`
+(script de análise, não versionado). Resultado: ~90 substituições, que se
+dividem em duas naturezas com tratamentos opostos.
+
+**Determinística (~35):** nome próprio, sigla, marca, termo técnico. O acerto é
+sempre o mesmo, independente do assunto do áudio. Exemplos medidos: Minquedinho
+→ LinkedIn (3x), Substeck → Substack (3x), Connect Lab → konekt.lab (5x),
+FRJ → UFRJ (5x), em Brapi → EMBRAPII, DIPPEC → Deep Tech,
+hidralétrica → hidroelétrica (6x). Não precisa de LLM nem de contexto.
+
+**Contextual (~50):** palavra comum do português trocada por outra palavra comum.
+"livro" → "líder", "ganho" → "gancho", "lixo" → "lítio", "testa" → "estratégia",
+"Canva" → "Notion". Nenhuma regra fixa acerta: as duas palavras existem e só o
+assunto decide.
+
+Fundir as duas num mecanismo só é o erro a evitar. Automatizar a segunda inventa
+correção; deixar a primeira manual desperdiça decisão já tomada.
+
+### DECISÃO DE DESENHO
+Glossário determinístico no script + skill para o julgamento, com a skill
+alimentando o glossário. Descartadas duas alternativas:
+
+- **Só a skill morando no projeto**: não resolveria a cobertura de 1/3, porque a
+  correção continuaria dependendo de pedido manual.
+- **Correção completa por API de LLM no script**: passaria a custar por
+  transcrição, corrigiria sem poder perguntar em caso de dúvida e não conhece o
+  tema do áudio, que é justamente o que mais ajuda a acertar nome próprio.
+
+### SOLUÇÃO
+
+**`glossario.json`** (novo) — 30 termos medidos, não inventados. Campo `exato`
+marca os que exigem casamento idêntico de maiúsculas. Traz também um bloco
+`_fora_de_proposito` documentando o que foi deliberadamente deixado de fora, para
+ninguém "consertar" isso depois sem saber por quê.
+
+**`glossario.local.json`** (novo, no `.gitignore`) — 3 termos ligados a pessoas e
+empresas com quem o Danilo trabalha. Este repositório é público, e decisão dele
+no momento do commit foi manter fora dele nome de terceiro que veio de conversa
+real. O script lê os dois arquivos e soma; a ausência do local é silenciosa,
+porque numa instalação nova ele não existe e nada deve quebrar por isso.
+Organização pública (UFRJ, FAPERJ, EMBRAPII, ANEEL) e marca própria (konekt.lab)
+continuam no arquivo público.
+
+**`corrigir_termos.py`** (novo) — aplica o glossário e grava ao lado um log
+`*_termos-corrigidos.md` com o que trocou e quantas vezes. Roda também sozinho
+sobre arquivo já existente: `python3 corrigir_termos.py <arquivo>`.
+
+Limite de palavra por lookaround `(?<!\w)...(?!\w)` em vez de `\b`, porque
+funciona igual para termo de uma palavra e para expressão com espaço ou hífen
+("Connect Lab", "start-up"), e garante que "FRJ" jamais case dentro de "UFRJ".
+
+Falha suave em três camadas: glossário ausente, JSON malformado (com número da
+linha do erro) e termo inválido são avisados e ignorados, sem derrubar a
+transcrição. O import em `transcribe_complete.py` também é tolerante.
+
+**`transcribe_complete.py`** (modificado) — fluxo passou de 4 para 5 passos.
+Novas flags `--sem-glossario` e `--glossario <caminho>`. A etapa roda depois de
+o arquivo estar salvo, então falha nela nunca custa a transcrição. O resumo
+final imprime quantos termos foram corrigidos e lembra que erro de contexto
+precisa da skill.
+
+**Skill movida** de `~/.claude/skills/arrumar-transcricao/` para
+`whisper-transcription/skill/`, com symlink em `~/.claude/skills/arrumar-transcricao`
+— mesmo padrão do pesquisa-orquestrada. Ganhou duas seções: a divisão de trabalho
+com o glossário (o que já vem corrigido e o que sobra para ela) e a etapa 7,
+"alimentar o glossário", com o teste de qualificação de termo novo.
+
+### RESULTADOS
+
+Teste 1, transcrição real (`26.03.16 Aula 2 LinkedIn Pro`): 10 correções em 6
+termos, batendo com o que havia sido corrigido à mão.
+
+Teste 2, armadilhas construídas de propósito — todas passaram:
+- "anel de vedação" preservado, "ANEL" → "ANEEL" na mesma frase
+- "UFRJ" não virou "UUFRJ"; "FRJ" isolado virou "UFRJ"
+- "startup" já correto não foi tocado; "start-up" e "start-ups" corrigidos
+- "Substeck", "SUBSTECK" e "substeck" → "Substack"
+
+Teste 3, idempotência: segunda passada = zero substituições, arquivos idênticos.
+
+Teste 4, ponta a ponta com áudio gerado por `say` (18s), rodando o pipeline
+completo: 3 correções aplicadas no passo 5 (Substeck, Connect Lab, hidralétrica),
+"anel de vedação" intacto.
+
+Teste 5, working dir em `/` com o venv, que é como o droplet roda: import
+resolve. Este teste existe porque o CHANGELOG de 2025-12-03 registra um bug de
+PATH/cwd do AppleScript que custou 4 tentativas de correção.
+
+### LIÇÕES APRENDIDAS
+
+**A trava contra falso positivo tem custo, e ele é aceitável.** No teste 4 o
+Whisper escreveu "a anel regula o setor elétrico" — é ANEEL, e o glossário não
+corrigiu porque o termo exige maiúsculas exatas. A alternativa seria destruir
+"anel de vedação". Sigla em minúscula que colide com palavra comum é
+irrecuperável por regra fixa e fica para a skill, por decisão.
+
+**Substituição que se acumula é bug silencioso.** "vesta" → "Vesta Greentech"
+viraria "Vesta Greentech Greentech" na segunda rodada. Todo termo novo precisa
+passar no teste de idempotência antes de entrar.
+
+**O dado do próprio uso é melhor fonte que hipótese.** Os 33 termos saíram de
+`difflib` sobre 8 pares reais. Nenhum foi inventado por parecer provável.
+
+**Extrair o glossário exigiu limpar timestamp e label de speaker antes do
+alinhamento**, senão o diff vira ruído de formatação em vez de erro de palavra.
+
+**Arquivo de configuração alimentado por trabalho real acumula nome de terceiro
+sem ninguém decidir isso.** O glossário nasceu de transcrições de conversas, e
+por isso trouxe junto nome de empresa e de pessoa. A pergunta a fazer antes de
+publicar não é se o arquivo tem segredo, é de onde vieram os dados dele. Vale
+a mesma varredura no CHANGELOG e na skill: os dois citavam exemplos com nome
+real e precisaram ser limpos antes do commit.
+
+**Correção de transcrição nunca fica completa, e isso é aceito.** Avaliação do
+Danilo ao fechar o trabalho: mesmo com uma sessão dedicada, carregando contexto
+do assunto, ainda passa erro. O objetivo do glossário não é transcrição perfeita,
+é não redescobrir o mesmo erro toda vez.
+
+---
+
 ## [2026-04-14] - Bugfix: wrapper ainda procurava arquivo .txt após migração para .md
 
 ### PROBLEMA
