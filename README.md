@@ -107,6 +107,16 @@ python3 transcribe_complete.py video.mp4 --threshold 0.65  # Mais speakers
 
 ---
 
+## 🎙️ ARQUIVOS COM MAIS DE UMA TRILHA DE ÁUDIO
+
+O script detecta quando o arquivo tem várias trilhas e mixa todas em mono antes de
+transcrever. Isso existe por causa do Azayaka, um gravador de reuniões que o Danilo
+usou até o começo de 2026 e que gravava microfone e sistema em trilhas separadas,
+às vezes deixando uma delas muda ou cortada, o que fazia o Whisper repetir trechos.
+
+O Azayaka saiu de uso, substituído pelo Granola, mas a mixagem continua valendo para
+qualquer gravação de tela ou vídeo que traga trilhas separadas.
+
 ## 📊 ETAPAS DO PROCESSAMENTO
 
 1. **Extração de áudio** - FFmpeg converte para WAV
@@ -183,8 +193,10 @@ Faz tudo automaticamente: os 5 passos, da extração de áudio à correção de 
 Aplica só o glossário, sobre um arquivo de transcrição já existente. Útil para
 recuperar transcrições antigas, feitas antes de o glossário existir.
 
-### diarize_with_postprocessing.py
-Apenas identifica speakers (sem transcrição).
+### _archive/
+Scripts de dezembro/2025 que levaram ao desenho atual, incluindo o
+`diarize_with_postprocessing.py` e os testes de threshold. Não são usados, ficam
+como memória do caminho percorrido. Não vão para o GitHub.
 
 ---
 
@@ -194,14 +206,15 @@ Apenas identifica speakers (sem transcrição).
 whisper-transcription/
 ├── transcribe_complete.py          ⭐ Script principal (Terminal)
 ├── transcribe_wrapper.py           🖥️ Wrapper GUI (notificações)
-├── diarize_with_postprocessing.py  🎯 Diarização
 ├── corrigir_termos.py              ✏️ Correção de termos (passo 5)
 ├── glossario.json                  📖 Termos que o Whisper erra sempre igual
 ├── skill/                          🧠 Skill /arrumar-transcricao
-├── whisper_transcription_env/      📦 Python env
-├── whisper-cpp-models/             🧠 Modelos Whisper
-├── sherpa-onnx-models/             🎤 Modelos diarização
+├── _archive/                       📦 Scripts antigos, fora do GitHub
+├── whisper_transcription_env/      📦 Python env, fora do GitHub
+├── whisper-cpp-models/             🧠 Modelos Whisper, fora do GitHub
+├── sherpa-onnx-models/             🎤 Modelos de voz, fora do GitHub
 ├── CHANGELOG.md                    📝 Histórico técnico completo
+├── PLANO.md                        🗺️ Frentes abertas e concluídas
 └── README.md                       📖 Este arquivo
 
 ~/Applications/

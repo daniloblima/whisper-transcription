@@ -4,6 +4,68 @@
 
 ---
 
+## [2026-08-21 10:52] - Limpeza de disco e o porquê que faltava no código
+
+### OBJETIVO
+Tirar do disco os modelos que a medição de 20 e 21/08 descartou. Organizar a pasta,
+que tinha acumulado instalador extraído, cache e material de outro projeto.
+
+### O QUE SAIU
+
+| item | tamanho | motivo |
+|---|---|---|
+| `3dspeaker_speech_eres2net_base_sv_zh-cn` | 38 MB | modelo de voz antigo, errou os dois áudios de referência |
+| `3dspeaker_speech_campplus_sv_zh_en` | 27 MB | errou os dois áudios |
+| `3dspeaker_speech_eres2net_sv_zh-cn_16k-common` | 210 MB | acerta, mas é cinco vezes mais lento |
+| dois `.tar.bz2` | 6,6 MB | instaladores já extraídos, um deles corrompido com 9 bytes |
+| `__pycache__` | 52 KB | regenerável |
+
+Pasta de 4,5 GB para 4,3 GB. As URLs de download dos três modelos estão no README,
+caso alguma medição futura precise deles de volta.
+
+### O QUE FICOU, POR DECISÃO DO DANILO
+
+**`nemo_en_titanet_large.onnx`, 97 MB.** Segundo colocado. Empatou com o vencedor no
+áudio de uma pessoa. Perdeu num trecho de quatro minutos de uma aula só. É o único
+substituto já testado se o wespeaker falhar em algum material futuro.
+
+**`ggml-medium.bin`, 1,4 GB.** Modelo de transcrição anterior, mantido como reserva
+até existir outro candidato. Continua acessível por `--model medium`.
+
+### O QUE FOI ARQUIVADO
+`Fotos Azayaka/`, 11 capturas de tela de 16/01/2026, movida para `_archive/`.
+
+### DESCOBERTA — o porquê que faltava na mixagem de trilhas
+
+A pasta de capturas levou a uma explicação que o código nunca teve por escrito. O
+Azayaka era o gravador de reuniões que o Danilo usava antes do Granola. Ele falhava
+de três formas: às vezes não gravava o microfone e só o áudio do sistema, às vezes
+gravava em dois canais separados. O resultado fazia o Whisper repetir trechos.
+
+Toda a lógica de `get_audio_streams()`, `test_stream_content()` e da mixagem por
+`amix` existe por causa disso. O código citava o Azayaka em cinco comentários sem
+nunca dizer o que era nem qual problema resolvia, então numa leitura futura pareceria
+complexidade sem causa, candidata a ser removida por simplificação.
+
+O Azayaka saiu de uso e a mixagem continua valendo para qualquer gravação de tela ou
+vídeo com trilhas separadas. Documentado no README.
+
+**Lição:** comentário que nomeia uma ferramenta externa sem explicar o problema dela
+envelhece mal. Quando a ferramenta sai de uso, some também a única pista de por que o
+código existe.
+
+### CORREÇÃO DE DOCUMENTAÇÃO
+O README listava `diarize_with_postprocessing.py` como script disponível. Ele não está
+na raiz desde alguma limpeza anterior. Ele vive no `_archive`. A árvore de arquivos do
+README também estava desatualizada e agora marca o que fica fora do GitHub.
+
+### ESTADO DO REPOSITÓRIO
+10 arquivos versionados, 556 KB. Só código, documentação e a skill. Modelos, venv,
+`_archive`, logs, glossário local e o `TranscribeVideo.app` ficam fora, este último
+por morar em `~/Applications`.
+
+---
+
 ## [2026-08-20 17:38] - Opus do WhatsApp, controle do número de falantes e atualização dos motores
 
 ### OBJETIVO
