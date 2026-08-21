@@ -5,6 +5,8 @@ Usa Whisper.cpp para transcrição rápida + Sherpa-ONNX para speaker diarizatio
 
 Uso:
     python3 transcribe_complete.py <video_ou_audio>
+    python3 transcribe_complete.py <video_ou_audio> --speakers 1
+    python3 transcribe_complete.py <video_ou_audio> --max-speakers 5
     python3 transcribe_complete.py <video_ou_audio> --threshold 0.75
     python3 transcribe_complete.py <video_ou_audio> --model medium
     python3 transcribe_complete.py <video_ou_audio> --sem-glossario
@@ -398,18 +400,22 @@ def parse_srt_timestamp(timestamp_str):
         return 0.0
     return 0.0
 
-def diarize_audio(audio_path, threshold=0.75, min_segment_ratio=0.10):
-    """Diariza áudio usando Sherpa-ONNX com pós-processamento"""
-    print(f"   Threshold: {threshold}")
-    print(f"   Pós-processamento: {min_segment_ratio*100:.0f}%")
-    print(f"   Carregando modelos...")
+# Escolhido em 21/08/2026 por medição em dois áudios com verdade conhecida, e
+# desempatado pelo ouvido do Danilo numa aula de 1h09 com duas vozes. O modelo
+# anterior (eres2net base) via 7 pessoas nessa aula e 2 numa nota de voz de 1.
+EMBEDDING_PADRAO = "wespeaker_en_voxceleb_resnet34_LM.onnx"
 
-    home = Path.home()
-    models_dir = home / "Experimentos/whisper-transcription/sherpa-onnx-models"
-    segmentation_model = models_dir / "sherpa-onnx-pyannote-segmentation-3-0/model.onnx"
-    embedding_model = models_dir / "3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx"
+# 0,75 era o valor do modelo antigo. Com o wespeaker, 0,92 acerta os dois áudios de
+# referência e 0,75 erra a aula. Medição no CHANGELOG de 21/08/2026.
+THRESHOLD_PADRAO = 0.92
 
-    # Configuração
+
+def _montar_diarizer(segmentation_model, embedding_model, num_clusters, threshold):
+    """Monta o diarizador do Sherpa-ONNX.
+
+    num_clusters = -1 deixa o algoritmo decidir sozinho quantas pessoas existem,
+    guiado só pelo threshold. Qualquer valor >= 1 fixa o número.
+    """
     config = sherpa_onnx.OfflineSpeakerDiarizationConfig(
         segmentation=sherpa_onnx.OfflineSpeakerSegmentationModelConfig(
             pyannote=sherpa_onnx.OfflineSpeakerSegmentationPyannoteModelConfig(
@@ -422,33 +428,82 @@ def diarize_audio(audio_path, threshold=0.75, min_segment_ratio=0.10):
             num_threads=os.cpu_count()
         ),
         clustering=sherpa_onnx.FastClusteringConfig(
-            num_clusters=-1,
+            num_clusters=num_clusters,
             threshold=threshold
         ),
         min_duration_on=0.5,
         min_duration_off=0.5
     )
+    return sherpa_onnx.OfflineSpeakerDiarization(config)
 
-    diarizer = sherpa_onnx.OfflineSpeakerDiarization(config)
 
-    # Ler áudio
-    print(f"   Lendo áudio...")
+def _ler_wav_mono(audio_path):
+    """Lê WAV e devolve as amostras em float32 mono, normalizadas."""
     with wave.open(str(audio_path), 'rb') as wf:
-        sample_rate = wf.getframerate()
         num_channels = wf.getnchannels()
         audio_data = wf.readframes(wf.getnframes())
 
-        if wf.getsampwidth() == 2:
-            samples = np.frombuffer(audio_data, dtype=np.int16)
-        else:
-            raise ValueError(f"Unsupported sample width")
+        if wf.getsampwidth() != 2:
+            raise ValueError("Unsupported sample width")
+
+        samples = np.frombuffer(audio_data, dtype=np.int16)
 
         if num_channels == 2:
             samples = samples.reshape(-1, 2).mean(axis=1)
 
-        samples = samples.astype(np.float32) / 32768.0
+        return samples.astype(np.float32) / 32768.0
 
-    # Processar
+
+def diarize_audio(audio_path, threshold=THRESHOLD_PADRAO, min_fala_segundos=8.0,
+                  min_fala_ratio=0.005, num_speakers=None, max_speakers=None,
+                  embedding_model=None):
+    """Diariza áudio usando Sherpa-ONNX, com controle sobre o número de falantes.
+
+    Três modos, e a escolha entre eles depende do que se sabe sobre o áudio:
+
+    - num_speakers=N: o número é conhecido (nota de voz, entrevista de duas
+      pessoas). Fixa N e desliga a fusão do pós-processamento, porque se o número
+      foi declarado não faz sentido o script reduzir abaixo dele.
+    - max_speakers=N: existe um teto conhecido mas não o número exato (webinário
+      com um palestrante e perguntas da plateia). Roda a detecção livre e só
+      refaz com N fixo se o resultado passar do teto.
+    - nenhum dos dois: detecção livre, como sempre foi.
+
+    O modo livre é o que produziu três falantes num áudio de dez minutos com uma
+    pessoa só, em 20/08/2026: variação de tom ao longo do tempo atravessa o
+    threshold e vira gente nova. Daí a existência dos dois primeiros modos.
+    """
+    home = Path.home()
+    models_dir = home / "Experimentos/whisper-transcription/sherpa-onnx-models"
+    segmentation_model = models_dir / "sherpa-onnx-pyannote-segmentation-3-0/model.onnx"
+
+    if embedding_model is None:
+        embedding_model = models_dir / EMBEDDING_PADRAO
+    else:
+        embedding_model = Path(embedding_model)
+        if not embedding_model.is_absolute():
+            embedding_model = models_dir / embedding_model
+
+    if not embedding_model.exists():
+        print(f"   ❌ Modelo de embedding não encontrado: {embedding_model}")
+        return []
+
+    if num_speakers is not None:
+        print(f"   Falantes: {num_speakers} (declarado)")
+    elif max_speakers is not None:
+        print(f"   Falantes: automático, teto de {max_speakers}")
+    else:
+        print(f"   Falantes: automático, sem teto")
+    print(f"   Threshold: {threshold}")
+    print(f"   Embedding: {embedding_model.name}")
+    print(f"   Carregando modelos...")
+
+    print(f"   Lendo áudio...")
+    samples = _ler_wav_mono(audio_path)
+
+    num_clusters = num_speakers if num_speakers is not None else -1
+    diarizer = _montar_diarizer(segmentation_model, embedding_model, num_clusters, threshold)
+
     print(f"   Processando diarização...")
     start_time = time.time()
     result = diarizer.process(samples)
@@ -458,47 +513,109 @@ def diarize_audio(audio_path, threshold=0.75, min_segment_ratio=0.10):
         print("   ⚠️  Nenhum segmento de fala detectado")
         return []
 
-    # Obter segmentos
+    detectados_brutos = result.num_speakers
+
+    # Teto: só age se a detecção livre passou do limite informado.
+    #
+    # Sobe o limiar antes de fixar o número, e a ordem importa. Fixar num_clusters faz
+    # o agrupamento ignorar o limiar e trocar de estratégia, e para o wespeaker isso
+    # piora muito: na aula de 1h09 com duas pessoas, o número fixo devolveu 67 e 2
+    # minutos (as duas vozes coladas numa), enquanto o modo livre com limiar 0,92
+    # devolveu 12 e 57. Fixar fica como último recurso.
+    if num_speakers is None and max_speakers is not None and detectados_brutos > max_speakers:
+        for tentativa in (0.95, 0.97, 0.99):
+            if tentativa <= threshold:
+                continue
+            print(f"   ↻ Achou {result.num_speakers}, acima do teto de {max_speakers}. "
+                  f"Subindo o limiar para {tentativa}.")
+            diarizer = _montar_diarizer(segmentation_model, embedding_model, -1, tentativa)
+            inicio_refaz = time.time()
+            novo = diarizer.process(samples)
+            elapsed += time.time() - inicio_refaz
+            if novo.num_segments and novo.num_speakers <= max_speakers:
+                result = novo
+                break
+            if novo.num_segments:
+                result = novo
+        else:
+            if result.num_speakers > max_speakers:
+                print(f"   ↻ Limiar no teto e ainda {result.num_speakers}. "
+                      f"Fixando em {max_speakers} como último recurso.")
+                diarizer = _montar_diarizer(segmentation_model, embedding_model, max_speakers, threshold)
+                inicio_refaz = time.time()
+                novo = diarizer.process(samples)
+                elapsed += time.time() - inicio_refaz
+                if novo.num_segments:
+                    result = novo
+        if result.num_segments == 0:
+            print("   ⚠️  Nenhum segmento de fala detectado após o teto")
+            return []
+
     segments = result.sort_by_start_time()
     raw_segments = [(seg.start, seg.end, seg.speaker) for seg in segments]
 
-    # Pós-processar
-    processed_segments = post_process_speakers(raw_segments, min_segment_ratio)
+    # Com número declarado, a fusão sairia por cima da informação do usuário.
+    if num_speakers is not None:
+        processed_segments = renumerar(raw_segments)
+        print(f"   Pós-processamento: desligado (número declarado)")
+    else:
+        print(f"   Pós-processamento: mínimo de {min_fala_segundos:.0f}s de fala por pessoa")
+        processed_segments = post_process_speakers(
+            raw_segments, min_fala_segundos=min_fala_segundos, min_fala_ratio=min_fala_ratio
+        )
+
     final_speaker_count = len(set(seg[2] for seg in processed_segments))
 
     print(f"   ✅ Diarização concluída em {elapsed:.1f}s")
-    print(f"   🎤 Speakers detectados: {result.num_speakers} → {final_speaker_count} (após pós-processamento)")
+    print(f"   🎤 Speakers detectados: {detectados_brutos} → {final_speaker_count} (após pós-processamento)")
     print(f"   📊 Total de segmentos: {len(processed_segments)}")
 
     return processed_segments
 
-def post_process_speakers(segments, min_segment_ratio=0.10):
-    """Pós-processamento para mesclar speakers esporádicos"""
-    speaker_counts = Counter(seg[2] for seg in segments)
-    total_segments = len(segments)
-    threshold_count = int(total_segments * min_segment_ratio)
 
-    main_speakers = {
-        speaker: count
-        for speaker, count in speaker_counts.items()
-        if count >= threshold_count
-    }
+def renumerar(segments):
+    """Renumera os ids de speaker para 0, 1, 2... na ordem em que aparecem."""
+    unique_speakers = sorted(set(seg[2] for seg in segments))
+    mapping = {old: new for new, old in enumerate(unique_speakers)}
+    return [(s, e, mapping[spk]) for s, e, spk in segments]
 
-    sporadic_speakers = {
-        speaker: count
-        for speaker, count in speaker_counts.items()
-        if count < threshold_count
-    }
 
-    # Mapear esporádicos para principais
-    speaker_mapping = {speaker: speaker for speaker in main_speakers.keys()}
+def post_process_speakers(segments, min_fala_segundos=8.0, min_fala_ratio=0.005):
+    """Funde falantes espúrios no vizinho mais próximo, medindo por tempo de fala.
 
-    for sporadic_speaker in sporadic_speakers.keys():
+    O critério anterior contava segmentos e descartava quem tivesse menos de 10%
+    do total. Isso apaga quem fez uma pergunta curta num webinário de uma hora,
+    que é falante legítimo, e é justamente o caso de uso que o Danilo tem além das
+    notas de voz. O critério passa a ser tempo somado de fala, com piso absoluto
+    em segundos e uma fração pequena da duração total para áudio longo.
+    """
+    tempo_por_speaker = {}
+    for inicio, fim, speaker in segments:
+        tempo_por_speaker[speaker] = tempo_por_speaker.get(speaker, 0.0) + (fim - inicio)
+
+    tempo_total = sum(tempo_por_speaker.values())
+    corte = max(min_fala_segundos, min_fala_ratio * tempo_total)
+
+    main_speakers = {s: t for s, t in tempo_por_speaker.items() if t >= corte}
+    sporadic_speakers = {s: t for s, t in tempo_por_speaker.items() if t < corte}
+
+    # Ninguém passou do corte (áudio curto): mantém o de maior tempo em vez de zerar.
+    if not main_speakers:
+        dominante = max(tempo_por_speaker.items(), key=lambda x: x[1])[0]
+        main_speakers = {dominante: tempo_por_speaker[dominante]}
+        sporadic_speakers = {s: t for s, t in tempo_por_speaker.items() if s != dominante}
+
+    if sporadic_speakers:
+        nomes = ", ".join(f"SPEAKER_{s} ({t:.1f}s)" for s, t in sorted(sporadic_speakers.items()))
+        print(f"   ↳ Fundidos por tempo abaixo de {corte:.1f}s: {nomes}")
+
+    speaker_mapping = {speaker: speaker for speaker in main_speakers}
+
+    for sporadic_speaker in sporadic_speakers:
         sporadic_segments = [seg for seg in segments if seg[2] == sporadic_speaker]
         if not sporadic_segments:
             continue
 
-        # Encontrar speaker principal mais próximo
         closest_main_speaker = None
         min_distance = float('inf')
 
@@ -506,12 +623,7 @@ def post_process_speakers(segments, min_segment_ratio=0.10):
             for main_seg in segments:
                 if main_seg[2] not in main_speakers:
                     continue
-
-                distance = min(
-                    abs(seg[0] - main_seg[1]),
-                    abs(seg[1] - main_seg[0])
-                )
-
+                distance = min(abs(seg[0] - main_seg[1]), abs(seg[1] - main_seg[0]))
                 if distance < min_distance:
                     min_distance = distance
                     closest_main_speaker = main_seg[2]
@@ -521,13 +633,8 @@ def post_process_speakers(segments, min_segment_ratio=0.10):
 
         speaker_mapping[sporadic_speaker] = closest_main_speaker
 
-    # Aplicar mapeamento e renumerar
     merged_segments = [(seg[0], seg[1], speaker_mapping[seg[2]]) for seg in segments]
-    unique_speakers = sorted(set(seg[2] for seg in merged_segments))
-    renumber_mapping = {old_id: new_id for new_id, old_id in enumerate(unique_speakers)}
-    final_segments = [(seg[0], seg[1], renumber_mapping[seg[2]]) for seg in merged_segments]
-
-    return final_segments
+    return renumerar(merged_segments)
 
 def merge_transcription_and_diarization(transcription_segments, diarization_segments):
     """Mescla transcrição com diarização"""
@@ -592,10 +699,22 @@ def save_final_output(segments, output_file):
 def main():
     parser = argparse.ArgumentParser(description='Transcrição com diarização usando Whisper + Sherpa-ONNX')
     parser.add_argument('input_file', help='Arquivo de vídeo ou áudio')
-    parser.add_argument('--model', default='medium', choices=['tiny', 'base', 'small', 'medium', 'large'],
+    parser.add_argument('--model', default='medium',
+                       choices=['tiny', 'base', 'small', 'medium', 'large', 'large-v3-turbo'],
                        help='Modelo Whisper (padrão: medium)')
-    parser.add_argument('--threshold', type=float, default=0.75,
-                       help='Threshold para diarização (padrão: 0.75)')
+    parser.add_argument('--threshold', type=float, default=THRESHOLD_PADRAO,
+                       help=f'Threshold para diarização (padrão: {THRESHOLD_PADRAO})')
+    parser.add_argument('--speakers', type=int, default=None, metavar='N',
+                       help='Número exato de pessoas falando. Use quando souber '
+                            '(nota de voz do WhatsApp: --speakers 1). Desliga a fusão '
+                            'do pós-processamento.')
+    parser.add_argument('--max-speakers', type=int, default=None, metavar='N',
+                       help='Teto de pessoas, para quando o número exato é desconhecido '
+                            '(webinário com palestrante e perguntas da plateia). Só entra '
+                            'em ação se a detecção livre passar do teto.')
+    parser.add_argument('--embedding', type=str, default=None, metavar='MODELO',
+                       help='Modelo de embedding de voz alternativo, por nome de arquivo '
+                            'dentro de sherpa-onnx-models/ ou caminho completo.')
     parser.add_argument('--language', default='auto', help='Idioma para transcrição (padrão: auto — detecção automática)')
     parser.add_argument('--output-dir', type=str, default=None,
                        help='Diretório de saída (padrão: ~/Downloads/Transcricoes/nome_video/)')
@@ -611,12 +730,29 @@ def main():
         print(f"❌ Arquivo não encontrado: {input_path}")
         sys.exit(1)
 
+    if args.speakers is not None and args.max_speakers is not None:
+        print("❌ Use --speakers ou --max-speakers, não os dois. O primeiro fixa o número, "
+              "o segundo é teto para quando o número é desconhecido.")
+        sys.exit(1)
+    if args.speakers is not None and args.speakers < 1:
+        print("❌ --speakers precisa ser 1 ou mais.")
+        sys.exit(1)
+    if args.max_speakers is not None and args.max_speakers < 1:
+        print("❌ --max-speakers precisa ser 1 ou mais.")
+        sys.exit(1)
+
     print("\n" + "="*80)
     print("TRANSCRIÇÃO COMPLETA COM DIARIZAÇÃO")
     print("="*80)
     print(f"Arquivo de entrada: {input_path}")
     print(f"Modelo Whisper: {args.model}")
     print(f"Threshold diarização: {args.threshold}")
+    if args.speakers is not None:
+        print(f"Falantes: {args.speakers} (declarado)")
+    elif args.max_speakers is not None:
+        print(f"Falantes: automático, teto de {args.max_speakers}")
+    else:
+        print(f"Falantes: automático, sem teto")
     print(f"Idioma: {args.language}")
     print("="*80)
 
@@ -641,7 +777,13 @@ def main():
 
     # Passo 3: Diarizar
     print_step(3, 5, "Identificando speakers (diarização)")
-    diarization_segments = diarize_audio(temp_audio, args.threshold)
+    diarization_segments = diarize_audio(
+        temp_audio,
+        threshold=args.threshold,
+        num_speakers=args.speakers,
+        max_speakers=args.max_speakers,
+        embedding_model=args.embedding,
+    )
 
     # Se não detectar speakers (áudio muito curto), criar segmento único com speaker padrão
     if not diarization_segments:

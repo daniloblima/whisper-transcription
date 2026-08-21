@@ -4,6 +4,310 @@
 
 ---
 
+## [2026-08-20 17:38] - Opus do WhatsApp, controle do número de falantes e atualização dos motores
+
+### OBJETIVO
+Dois problemas trazidos pelo Danilo no mesmo pedido. Áudio `.opus`, que é o formato
+nativo das notas de voz do WhatsApp, era recusado pelo app e obrigava a converter o
+arquivo num site antes de arrastar. E um áudio de dez minutos em que só ele fala foi
+transcrito com três falantes diferentes.
+
+### PROBLEMA 1 — Opus recusado
+
+O log registra o erro literal:
+
+```
+[2026-08-20 14:57:35] ERRO: Formato não suportado - .opus
+[2026-08-20 15:03:10] INÍCIO: Processando ...10.57.05.mp3
+```
+
+**Causa.** `transcribe_wrapper.py` validava a extensão contra uma lista de sete itens
+que não incluía `.opus`. Nada no pipeline tinha limitação real, porque o ffmpeg lê
+opus nativamente, o que foi confirmado antes de tocar no código gerando um `.opus` com
+`ffmpeg -c:a libopus` e extraindo dele o WAV 16 kHz mono que o pipeline usa.
+
+**Solução.** Lista passou de 7 para 21 extensões, separadas em vídeo e áudio, com a
+mensagem de erro reagrupada. Entraram `.opus`, `.ogg`, `.oga`, `.aac`, `.flac`,
+`.wma`, `.aiff`, `.aif`, `.webm`, `.m4v`, `.wmv`, `.flv`, `.mpg`, `.mpeg`.
+
+**Resultado.** O `.opus` de 620 s processou pelo app em 2min57s, sem conversão prévia.
+
+### PROBLEMA 2 — Três falantes num áudio de uma pessoa
+
+**Causa, em três camadas.**
+
+1. `num_clusters=-1` na `FastClusteringConfig` manda o algoritmo descobrir sozinho
+   quantas pessoas existem, guiado só pelo threshold de 0,75. Ele nunca recebe a
+   informação de que há uma pessoa. Variação de tom ao longo de dez minutos
+   atravessa o limiar e vira falante novo.
+2. O modelo de embedding era o `3dspeaker_speech_eres2net_base_sv_zh-cn_...`, a
+   menor variante da família, treinada em mandarim. É ele que decide se duas vozes
+   são da mesma pessoa.
+3. O pós-processamento contava segmentos e só descartava quem tivesse menos de 10%
+   do total. Um falso falante com 30% da conversa passava direto.
+
+**A ressalva que o desenho precisou respeitar.** Nem sempre o número é conhecido. O
+Danilo também transcreve webinários e lives, onde há um palestrante principal e
+pessoas da plateia fazendo perguntas, em quantidade que ninguém sabe de antemão.
+Forçar número fixo ali seria pior que o problema original, porque descartaria quem
+perguntou. Daí o desenho ter dois parâmetros e não um.
+
+**Solução em `transcribe_complete.py`.**
+
+- `--speakers N` fixa o número (`num_clusters=N`) e desliga a fusão do
+  pós-processamento, porque com número declarado não faz sentido o script reduzir
+  abaixo dele.
+- `--max-speakers N` é teto. Roda a detecção livre e só refaz com N fixo se o
+  resultado passar do teto. É o modo do webinário.
+- Sem nenhum dos dois, o comportamento antigo permanece.
+- `--embedding MODELO` permite trocar o modelo de voz sem editar código, o que
+  tornou possível medir os candidatos.
+
+**Solução no pós-processamento.** O corte deixou de contar segmentos e passou a
+somar tempo de fala, com piso de 8 s e 0,5% da duração total. Uma pergunta de trinta
+segundos num webinário de uma hora sobrevive; fragmento espúrio de três segundos
+não. Havia também o caso de ninguém passar do corte em áudio curto, que agora
+preserva o falante de maior tempo em vez de devolver vazio.
+
+**Solução no app, sem terminal.** O droplet passou a perguntar, uma vez por lote,
+"Quantas pessoas falam neste áudio?", com seis opções em português que mapeiam para
+os parâmetros. O `main.scpt` foi recompilado e reinstalado dentro do
+`TranscribeVideo.app` existente, preservando `Info.plist` e ícone, com re-assinatura
+ad-hoc por `codesign --force --deep -s -`. As seis opções foram testadas isoladas
+antes da instalação.
+
+### BUG COLATERAL CORRIGIDO
+As notificações de progresso do macOS nunca disparavam. O wrapper procurava
+`PASSO 1/4` e o script passou a imprimir `PASSO 1/5` em 13/08/2026, quando a
+correção de termos virou o quinto passo. Corrigido para 5 etapas.
+
+### ERRO COMETIDO — arquivo do Danilo sobrescrito
+Rodei o teste do `.opus` pelo caminho normal do app, que grava em
+`~/Downloads/Transcricoes/<nome>/`. A transcrição que estava lá desde as 16:13,
+editada por ele, foi substituída às 17:31. Sem Time Machine e sem snapshot que
+alcançasse. Recuperados apenas os primeiros 4min36s, que eu tinha lido antes, em
+`RECUPERADO-PARCIAL-versao-de-16h13.md`, com cabeçalho declarando o que falta.
+
+**Lição.** Teste de pipeline escreve em pasta temporária via `--output-dir`, nunca no
+destino real, porque o destino real é onde o trabalho do usuário mora.
+
+### ERRO COMETIDO — julguei qualidade de transcrição sem ter como
+Comparei as duas transcrições do mesmo áudio e afirmei que a nova estava melhor,
+citando "pela gatinha" virando "pela Catinha". O Danilo corrigiu, porque a gata do
+interlocutor tinha morrido e "gatinha" era a palavra certa. A versão que eu dei como
+corrigida era a que tinha errado.
+
+Pior, a premissa também estava errada. Fui verificar e as duas transcrições saíram
+do mesmo motor. O processo carregou o módulo às 17:29:01 e minha troca de modelo só
+foi escrita às 17:30:12. A única variável entre elas era o arquivo de entrada.
+
+**Lição.** Qualidade de transcrição não se julga comparando dois textos entre si. Só
+quem estava na conversa sabe o que foi dito. O protocolo passou a ser gerar um
+arquivo só com os pontos onde os modelos discordam, numerados, para o Danilo marcar
+qual acertou. A diarização é diferente e pode ser medida sozinha, porque ali existe
+verdade conhecida. O áudio de referência tem uma pessoa, então detectar 1 é acerto.
+
+### DESCOBERTA — sherpa-onnx 1.12.18 tinha segfault com dois modelos de embedding
+
+A primeira rodada de medição terminou com código de saída 0 e cobriu só três dos
+cinco modelos, sem nenhuma mensagem de erro. Investigando, o
+`wespeaker_en_voxceleb_resnet34_LM.onnx` e o
+`3dspeaker_speech_eres2net_sv_zh-cn_16k-common.onnx` derrubavam o processo com
+**exit 139 (SIGSEGV)** ao carregar. Nada em stderr, nada em stdout, porque o crash
+é nativo do ONNX Runtime e não passa pelo Python.
+
+Atualizar o `sherpa-onnx` de 1.12.18 para 1.13.6 resolveu. Os dois modelos passaram
+a carregar e devolver resultado.
+
+**Duas lições.** A primeira é que processo morto por sinal não deixa rastro em log
+de aplicação, então script de medição precisa reportar o código de saída de cada
+item em vez de confiar em exceção Python. A segunda é sobre o meu próprio erro de
+método: o comando do benchmark tinha um `grep -v "^   "` para reduzir ruído, e esse
+filtro engolia justamente as linhas de diagnóstico, que são indentadas. Filtro de
+saída em execução de medição esconde a informação que importa quando dá errado.
+
+Consequência prática: toda a medição de embedding foi refeita na 1.13.6, porque os
+números da primeira rodada saíram de uma versão com bug conhecido.
+
+### VERSÕES ATUALIZADAS
+- `whisper-cpp` 1.8.3 → 1.9.2, via Homebrew. Validado transcrevendo um trecho de
+  30 s com o modelo `large-v3-turbo` recém-baixado.
+- `sherpa-onnx` (Python) 1.12.18 → 1.13.6, via pip no venv do projeto. Sem quebra
+  de API nas classes usadas (`OfflineSpeakerDiarizationConfig`,
+  `SpeakerEmbeddingExtractorConfig`, `FastClusteringConfig`), o que foi conferido
+  nas notas de versão antes de atualizar.
+
+### MEDIÇÃO — modelos de embedding, sherpa-onnx 1.13.6
+
+Áudio de referência: `WhatsApp Audio 2026-08-11 at 10.57.05.opus`, 620 s, uma
+pessoa falando. Verdade conhecida, então detectar 1 é acerto.
+
+| modelo | thr | falantes | tempo | tamanho |
+|---|---|---|---|---|
+| eres2net base zh-cn (o que o projeto usava) | 0,75 | 2 | 124,7 s | 40 MB |
+| eres2net base zh-cn | 0,85 | 2 | 125,6 s | 40 MB |
+| campplus zh+en advanced | 0,75 | 2 | 70,9 s | 28 MB |
+| campplus zh+en advanced | 0,85 | 2 | 68,2 s | 28 MB |
+| eres2net **grande** zh-cn | 0,75 | 1 | 609,0 s | 224 MB |
+| eres2net **grande** zh-cn | 0,85 | 1 | 585,2 s | 224 MB |
+| nemo TitaNet-Large | 0,75 | 1 | 131,4 s | 97 MB |
+| nemo TitaNet-Large | 0,85 | 1 | 118,8 s | 97 MB |
+| wespeaker voxceleb resnet34 LM | 0,75 | 1 | 112,6 s | 26 MB |
+| wespeaker voxceleb resnet34 LM | 0,85 | 1 | 113,7 s | 26 MB |
+
+**Correção de diagnóstico.** Eu tinha atribuído o erro do modelo antigo ao treino em
+mandarim. A medição derruba isso. O eres2net grande é da mesma família e do mesmo
+idioma, e acerta nos dois limiares. O campplus é bilíngue, o que lhe daria a
+vantagem de idioma, e erra igual ao antigo. O que separa acerto de erro é a
+capacidade do modelo, porque o que o projeto usava é a variante `base`, a menor da
+família. O idioma de treino não apareceu como fator.
+
+**Descarte por custo.** O eres2net grande acerta e leva 609 s contra 113 s do
+wespeaker para o mesmo resultado, com 224 MB contra 26 MB em disco. Fora.
+
+**Finalistas.** TitaNet-Large e wespeaker resnet34 empatam neste áudio. O desempate
+precisa de um áudio com mais de uma voz conhecida, porque este testa só uma das duas
+habilidades: não inventar falante onde não há. Separar duas vozes de verdade é o
+outro lado, e um modelo que simplesmente agrupasse tudo numa pessoa só passaria
+neste teste sem prestar.
+
+### DESEMPATE — aula com duas vozes conhecidas
+
+O Danilo forneceu uma aula do portal Nutror com duas pessoas falando, 1h09min22s.
+Obtida com o navegador Playwright em perfil persistente (`~/.playwright-profile`),
+que ele autenticou na janela. O player é Vimeo em domínio restrito, e o caminho que
+funcionou foi extrair o `src` do iframe pelo DOM (`player.vimeo.com/video/790038962`)
+e baixar só a trilha de áudio com `yt-dlp --referer https://app.nutror.com/`.
+
+Registro de método: capturar a URL do manifesto pelas requisições de rede não serviu,
+porque as URLs do Vimeo adaptativo são longas e chegavam truncadas no log. Ler o
+iframe do DOM é o caminho curto.
+
+### MEDIÇÃO — aula de 1h09 com duas vozes conhecidas
+
+| config | falantes | tempo | distribuição |
+|---|---|---|---|
+| eres2net base (o antigo), auto 0,75 | 7 | 812 s | 13, 1, 35, 17, 0, 3, 0 min |
+| titanet, auto 0,75 | 4 | 723 s | 16, 35, 17, 1 min |
+| wespeaker, auto 0,75 | 4 | 827 s | 9, 8, 49, 2 min |
+| titanet, auto 0,92 | 4 | 1274 s | 15, 0, 52, 1 min |
+| titanet, auto 0,97 | 4 | 1386 s | 16, 0, 52, 1 min |
+| wespeaker, auto 0,92 | 2 | 1583 s | 12, 57 min |
+| wespeaker, auto 0,97 | 2 | 913 s | 67, 2 min |
+| wespeaker, `--speakers 2` | 2 | 924 s | 67, 2 min |
+| titanet, `--speakers 2` | 2 | 2822 s | 18, 51 min |
+
+**Contar certo não é separar certo, e por pouco isso não virou conclusão errada.**
+Três configurações devolveram o número exato de falantes. Duas delas põem 67 dos 69
+minutos num falante só e 2 no outro, o que não é ter encontrado duas pessoas: é ter
+colapsado tudo numa e sobrado um resto. Se o critério fosse só a contagem, o
+wespeaker com limiar 0,97 seria eleito por ser o mais rápido dos que "acertaram".
+
+Régua que fica: em diarização, a contagem de falantes é condição necessária e não
+suficiente. A distribuição de tempo por falante precisa ser olhada junto, e quando
+as duas candidatas produzem divisões plausíveis e diferentes entre si, nenhum número
+resolve. Quem sabe quem falou quando é quem estava lá.
+
+**Custo do número declarado.** `--speakers 2` levou 2822 s no titanet contra 723 s do
+mesmo modelo em modo livre, quase quatro vezes mais. Com `num_clusters` fixo o
+agrupamento deixa de cortar por limiar e passa a comparar segmentos entre si, o que
+escala mal com a duração. Em áudio de dez minutos é irrelevante, e em uma hora de
+aula vira quarenta e sete minutos de espera só nessa etapa. Isso precisa entrar na
+escolha do padrão do app, provavelmente decidindo a estratégia pela duração do
+arquivo em vez de aplicar a mesma para tudo.
+
+**Finalistas reais**, os únicos dois com divisão plausível:
+- `titanet` com `--speakers 2`: 18 e 51 min, 47 min de processamento
+- `wespeaker` com limiar 0,92: 12 e 57 min, 26 min de processamento
+
+Empate que a máquina não desfaz. Material de conferência gerado para o Danilo julgar
+de ouvido.
+
+### ERRO COMETIDO — monitor com prazo menor que a tarefa
+A primeira rodada dos testes com número declarado foi morta no meio: dei ao monitor
+um limite de 50 minutos e o primeiro dos quatro casos levou 47. Três medições
+perdidas, cerca de uma hora de processamento jogada fora. Relançado por
+`run_in_background`, sem prazo, escrevendo cada resultado em arquivo à medida que
+sai em vez de só no fim.
+
+**Lição.** Prazo de monitor se dimensiona pelo pior caso conhecido vezes o número de
+casos, não pela estimativa otimista do total. E medição longa grava resultado
+parcial em disco, porque processo morto não devolve o que já tinha calculado.
+
+### DESEMPATE RESOLVIDO — pelo ouvido do Danilo, em 21/08/2026
+
+As duas finalistas produziam divisões plausíveis e incompatíveis, e nenhum número
+decidia. Saída: recortar 4 minutos da aula no ponto de maior discordância (1:03:00 a
+1:07:00, 87 divergências em 155 falas), transcrever com o turbo, montar tabela com a
+atribuição das duas lado a lado e mandar o áudio junto.
+
+Antes de mandar, a leitura do texto reduziu 87 discordâncias a duas passagens que
+decidiam, o que transformou uma tarefa de conferir tabela numa de ouvir dois trechos.
+Vale como método: apresentar a evidência já triada, com o ponto exato do áudio, em
+vez de despejar a tabela inteira.
+
+**Respostas do Danilo.**
+
+1. Aos 9s começa uma fala sobre Pierre Bourdieu que vai até os 48s, uma pessoa só, e
+   a troca acontece logo antes dos 9s. A configuração A (titanet, `--speakers 2`)
+   parte essa fala contínua em dois falantes no segundo 11, no meio de "que tem um
+   texto / maravilhoso". A configuração B (wespeaker, limiar 0,92) mantém a mesma
+   pessoa e ainda acerta a troca seguinte, no "Exato". **B ganha inteiro.**
+2. "Quem conseguir chegar até o final, quem sobreviver" é a mesma pessoa, e a troca
+   vem depois. B acerta essa parte e A erra. Na troca seguinte A acerta e B perde.
+   **Empate, com B levando a primeira metade.**
+
+**Escolha: `wespeaker_en_voxceleb_resnet34_LM.onnx`, 26 MB, em modo automático com
+limiar 0,92.**
+
+**Achado contra-intuitivo que isso expõe.** O wespeaker vai melhor sem receber o
+número de falantes do que recebendo. Com `--speakers 2` ele devolveu 67 e 2 minutos
+numa aula de 69, colapsando as duas vozes numa; no automático com limiar 0,92
+devolveu 12 e 57. Com `num_clusters` fixo o agrupamento ignora o limiar e muda de
+estratégia, e para este modelo a estratégia livre com corte alto é melhor. Isso
+obriga a revisar o mapeamento das opções do droplet, que hoje traduz "2 pessoas" em
+`--speakers 2`.
+
+**Correção de medição.** Registrei antes que `--speakers 2` custava 2822 s contra
+723 s do modo livre, quase quatro vezes. Repetido isolado, o mesmo caso levou 816 s.
+A primeira medição rodou enquanto eu regenerava a comparação de transcrição no mesmo
+processador. Lição: medição de tempo não vale se outra coisa pesada estiver rodando,
+e o número precisa ser refeito sozinho antes de virar argumento de desenho.
+
+### APLICADO
+
+**Validação antes de mudar o padrão.** O limiar 0,92 foi conferido no áudio de uma
+pessoa antes de virar padrão, porque subir o corte para acertar a aula não podia
+quebrar o caso que já funcionava. Com o wespeaker, 0,92 e 0,97 devolvem 1 falante nos
+620 s da nota de voz, em 120 s e 117 s.
+
+**Três mudanças no padrão:**
+
+| o quê | de | para |
+|---|---|---|
+| modelo de voz | eres2net base zh-cn, 40 MB | wespeaker voxceleb resnet34 LM, 26 MB |
+| limiar | 0,75 | 0,92 |
+| "2 pessoas" no droplet | `--speakers 2` | `--max-speakers 2` |
+
+**`--max-speakers` mudou de comportamento.** Antes, estourar o teto fazia o script
+fixar `num_clusters`. Agora ele sobe o limiar por tentativas (0,95, depois 0,97,
+depois 0,99) e só fixa o número como último recurso. A ordem vem da medição: fixar o
+número faz o agrupamento ignorar o limiar e trocar de estratégia, e para o wespeaker
+isso cola as duas vozes numa. O droplet passou a traduzir todas as opções de duas
+pessoas em diante como teto, e só "1 pessoa" continua número fixo, porque com uma
+voz não há o que colar.
+
+**Teste ponta a ponta.** `.opus` de 620 s com `--speakers 1`, gravando em pasta
+temporária via `--output-dir`. Saída com um único `SPEAKER_0`, limiar 0,92 e embedding
+wespeaker confirmados no log dos cinco passos.
+
+### PENDENTE
+Escolha entre `medium` e `large-v3-turbo`, que depende da marcação do Danilo em
+`~/Downloads/Transcricoes/COMPARACAO-modelos-transcricao.md` (145 diferenças de
+palavra, pontuação já descartada). Enquanto isso o padrão segue `medium`.
+
+---
+
 ## [2026-08-13 16:36] - Correção de termos integrada ao fluxo (passo 5) + skill trazida para o projeto
 
 ### OBJETIVO

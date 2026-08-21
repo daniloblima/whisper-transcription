@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
 Wrapper para executar transcrição com notificações nativas do macOS
-Chamado pelo app Automator TranscribeVideo.app
+Chamado pelo app TranscribeVideo.app
+
+Uso: transcribe_wrapper.py <arquivo> [argumentos extras para transcribe_complete.py]
+
+Os argumentos extras vêm do droplet, que pergunta ao usuário quantas pessoas
+falam no áudio antes de disparar o processamento. Exemplo do que chega aqui:
+    transcribe_wrapper.py audio.opus --speakers 1
 """
 import sys
 import os
@@ -90,6 +96,13 @@ def main():
 
     log_to_file(f"INÍCIO: Processando {video_path.name}")
 
+    # Argumentos extras repassados ao script principal (--speakers, --max-speakers).
+    # Vêm do droplet e nunca do usuário digitando, então a validação de verdade
+    # acontece no argparse do transcribe_complete.py.
+    extra_args = sys.argv[2:]
+    if extra_args:
+        log_to_file(f"Argumentos extras: {' '.join(extra_args)}")
+
     # Validar arquivo
     if not video_path.exists():
         send_error_dialog(f"Arquivo não encontrado:\\n{video_file}")
@@ -99,9 +112,18 @@ def main():
         return 1
 
     # Validar extensão
-    valid_extensions = {'.mp4', '.mov', '.avi', '.mkv', '.mp3', '.wav', '.m4a'}
+    # Tudo que o ffmpeg lê e o pipeline consegue converter para WAV 16 kHz mono.
+    # .opus e .ogg entraram em 20/08/2026: são o formato nativo das notas de voz do
+    # WhatsApp, e a ausência deles obrigava a converter o arquivo por fora antes de
+    # arrastar para o app.
+    valid_extensions = {
+        # vídeo
+        '.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v', '.wmv', '.flv', '.mpg', '.mpeg',
+        # áudio
+        '.mp3', '.wav', '.m4a', '.opus', '.ogg', '.oga', '.aac', '.flac', '.wma', '.aiff', '.aif',
+    }
     if video_path.suffix.lower() not in valid_extensions:
-        send_error_dialog(f"Formato não suportado: {video_path.suffix}\\n\\nFormatos aceitos:\\nMP4, MOV, AVI, MKV, MP3, WAV, M4A")
+        send_error_dialog(f"Formato não suportado: {video_path.suffix}\\n\\nFormatos aceitos:\\nVídeo: MP4, MOV, AVI, MKV, WEBM, M4V, WMV, FLV, MPG\\nÁudio: MP3, WAV, M4A, OPUS, OGG, AAC, FLAC, WMA, AIFF")
         log_to_file(f"ERRO: Formato não suportado - {video_path.suffix}")
         log_debug(f"RETURN CODE: 1 (Formato não suportado)")
         log_debug(f"FIM: {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -138,7 +160,7 @@ def main():
     # Executar script principal
     try:
         process = subprocess.Popen(
-            [str(python_exe), str(main_script), str(video_path)],
+            [str(python_exe), str(main_script), str(video_path)] + extra_args,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -151,25 +173,30 @@ def main():
             line = line.strip()
 
             # Detectar etapas e mostrar notificações
-            if "PASSO 1/4" in line:
+            if "PASSO 1/5" in line:
                 send_progress_notification(
                     "Extraindo áudio do arquivo...",
-                    "Transcrição - Etapa 1/4"
+                    "Transcrição, etapa 1 de 5"
                 )
-            elif "PASSO 2/4" in line:
+            elif "PASSO 2/5" in line:
                 send_progress_notification(
                     "Transcrevendo áudio (pode demorar)...",
-                    "Transcrição - Etapa 2/4"
+                    "Transcrição, etapa 2 de 5"
                 )
-            elif "PASSO 3/4" in line:
+            elif "PASSO 3/5" in line:
                 send_progress_notification(
-                    "Identificando speakers (diarização)...",
-                    "Transcrição - Etapa 3/4"
+                    "Identificando quem fala...",
+                    "Transcrição, etapa 3 de 5"
                 )
-            elif "PASSO 4/4" in line:
+            elif "PASSO 4/5" in line:
                 send_progress_notification(
-                    "Mesclando transcrição com speakers...",
-                    "Transcrição - Etapa 4/4"
+                    "Juntando texto e falantes...",
+                    "Transcrição, etapa 4 de 5"
+                )
+            elif "PASSO 5/5" in line:
+                send_progress_notification(
+                    "Corrigindo termos do glossário...",
+                    "Transcrição, etapa 5 de 5"
                 )
 
             # Continuar consumindo output para não bloquear
