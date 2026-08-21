@@ -342,6 +342,21 @@ A palavra "não" foi dita, como muleta depois de uma pausa. Escrita sem a vírgu
 a isolaria, ela transforma "estou lendo" em "não estou lendo". O sentido vira o
 oposto por causa de um sinal de pontuação.
 
+**Tamanho real do estrago, medido depois.** Este item 11 nunca esteve escondido: a
+diferença ali era de palavra inteira, o "não" presente contra ausente, então ele
+estava visível no arquivo e foi lá que o Danilo o marcou. Ele o usou para ilustrar o
+fenômeno, e eu li como se tivesse enterrado casos assim.
+
+Refazendo o filtro com a exceção de negação, apareceram 10 casos antes descartados, e
+a inspeção mostra que quase nenhum é semântico: são vírgulas depois de "então" e
+"que", com alguma palavra negativa a três ou quatro posições de distância. Só um
+chega perto de mudar sentido.
+
+O princípio segue válido e a correção do filtro fica. O erro concreto neste áudio,
+porém, foi pequeno, e registrar isso importa tanto quanto registrar o erro: relato
+que infla a própria falha é tão falso quanto o que a esconde, e vira base errada para
+decisão futura.
+
 **Correção aplicada** no gerador de comparação: diferença de pontuação continua sendo
 descartada, exceto quando há palavra negativa por perto (`não`, `nem`, `nunca`,
 `nada`, `jamais`, `ninguém`, `nenhum`). Esses casos ficam e vêm marcados.
