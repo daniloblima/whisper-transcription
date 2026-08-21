@@ -77,9 +77,9 @@ python3 transcribe_complete.py "caminho/para/seu/video.mp4"
 
 ### Escolher modelo Whisper
 ```bash
-python3 transcribe_complete.py video.mp4 --model tiny   # Rápido
-python3 transcribe_complete.py video.mp4 --model medium # Padrão  
-python3 transcribe_complete.py video.mp4 --model large  # Preciso
+python3 transcribe_complete.py video.mp4 --model large-v3-turbo  # Padrão
+python3 transcribe_complete.py video.mp4 --model medium          # Mais lento
+python3 transcribe_complete.py video.mp4 --model tiny            # Rascunho rápido
 ```
 
 ### Dizer quantas pessoas falam
@@ -221,9 +221,23 @@ whisper-transcription/
 ## 🎯 MODELOS EM USO, E POR QUÊ
 
 ### Transcrição
-`whisper-cpp-models/ggml-medium.bin`. O `ggml-large-v3-turbo.bin` está em disco e é
-mais rápido. A troca depende de uma comparação de qualidade que só quem gravou o
-áudio pode julgar.
+`whisper-cpp-models/ggml-large-v3-turbo.bin`. Escolhido em 21/08/2026, depois de o
+Danilo marcar 39 pontos onde ele e o `medium` discordavam: 23 a favor do turbo, 11 a
+favor do `medium`, 5 em que os dois erraram.
+
+O princípio que decidiu vale além do placar. O `medium` filtra por conta própria
+parte das muletas de fala. O turbo é mais fiel ao que foi dito, e transcrever fiel
+para limpar depois é melhor que confiar na filtragem do modelo, porque o que ele
+descarta na transcrição não volta.
+
+Há um efeito colateral bom. O turbo produz cerca de seis vezes mais segmentos que o
+`medium` no mesmo áudio. Segmento curto casa melhor com troca de falante, o que
+melhora a identificação de quem fala. Também é mais rápido.
+
+Conferido contra o modo de falha típico de modelo destilado, que é entrar em laço
+repetindo a mesma frase. Numa aula de 1h09 foram 12 repetições consecutivas em 3667
+falas, todas de expressões que gente repete falando mesmo ("vamos lá", "com
+certeza"), nenhuma passando de duas vezes seguidas.
 
 ### Identificação de quem fala
 `sherpa-onnx-models/wespeaker_en_voxceleb_resnet34_LM.onnx`, 26 MB, com limiar 0,92.
@@ -252,7 +266,7 @@ cd sherpa-onnx-models
 curl -LO https://huggingface.co/csukuangfj/speaker-embedding-models/resolve/main/wespeaker_en_voxceleb_resnet34_LM.onnx
 
 cd ../whisper-cpp-models
-curl -LO https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin
+curl -LO https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin
 ```
 
 O modelo de segmentação (`sherpa-onnx-pyannote-segmentation-3-0`) vem do mesmo

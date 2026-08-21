@@ -301,10 +301,71 @@ voz não há o que colar.
 temporária via `--output-dir`. Saída com um único `SPEAKER_0`, limiar 0,92 e embedding
 wespeaker confirmados no log dos cinco passos.
 
+### DECISÃO DO MODELO DE TRANSCRIÇÃO — 21/08/2026
+
+O Danilo marcou 39 dos 145 pontos de discordância.
+
+| quem acertou | itens |
+|---|---|
+| large-v3-turbo | 23 |
+| medium (o atual) | 11 |
+| os dois erraram | 5 |
+
+**O argumento dele pesou mais que o placar.** Antes de olhar o resultado ele
+observou que o `medium` já filtra parte das muletas de fala e o turbo é mais fiel, e
+concluiu que o certo é transcrever fiel e limpar depois, em vez de confiar na
+filtragem do modelo. Informação descartada na transcrição não volta; filtro se
+aplica sobre texto fiel. O placar de 2 para 1 apenas confirmou.
+
+Somam-se três medições independentes de julgamento: o turbo produziu 184 segmentos
+contra 30 do `medium` no mesmo áudio (segmento curto casa melhor com troca de
+falante, o que ajuda a diarização), levou 0,6 min contra 1,0 min, e acertou
+"gatinha", o único ponto onde havia verdade confirmada.
+
+**Régua que sai das anotações dos itens 11 e 16.** Nos dois casos em que um modelo
+omitiu a muleta e o outro a escreveu sem a vírgula, o Danilo considerou a omissão
+mais próxima do certo. Quando não dá para pontuar corretamente uma muleta, deixá-la
+de fora causa menos dano que incluí-la torta. Vale para o filtro de fillers.
+
+### ERRO COMETIDO — descartei pontuação como ruído, e para negação ela é o sentido
+
+Ao filtrar o arquivo de comparação, escrevi que diferença de pontuação "não diz nada
+sobre qual modelo entendeu melhor o que foi dito" e joguei fora 72 das 217
+divergências. O Danilo apontou o item 11 como contraexemplo:
+
+```
+medium:  E também, [ não ] estou até lendo um pouco mais sobre ele
+turbo:   E também, [      ] estou até lendo um pouco mais sobre ele
+```
+
+A palavra "não" foi dita, como muleta depois de uma pausa. Escrita sem a vírgula que
+a isolaria, ela transforma "estou lendo" em "não estou lendo". O sentido vira o
+oposto por causa de um sinal de pontuação.
+
+**Correção aplicada** no gerador de comparação: diferença de pontuação continua sendo
+descartada, exceto quando há palavra negativa por perto (`não`, `nem`, `nunca`,
+`nada`, `jamais`, `ninguém`, `nenhum`). Esses casos ficam e vêm marcados.
+
+**Régua geral:** em português, pontuação perto de negação é semântica e não estilo.
+Qualquer filtro que trate pontuação como ruído precisa dessa exceção.
+
+**Escopo decidido pelo Danilo, e ele cortou o meu excesso.** Cheguei a propor apoio
+mais estruturado para negação. Ele descartou, e a razão é sobre o uso real: o app
+serve majoritariamente para transcrever material de terceiros baixado da internet,
+aula e vídeo, e quase nunca a fala do próprio Danilo. Não existe perfil de falante
+para modelar, então lista ou base de dados seria engenharia sem população.
+
+O que fica no lugar: nada no script. A régua vive aberta, aplicada pela sessão que
+estiver trabalhando no material. Contradição envolvendo negação vira pergunta e volta
+à origem, em vez de virar regra automática. É a mesma fronteira entre o
+`glossario.json` e a skill `/arrumar-transcricao`, e negação cai inteira do lado do
+julgamento.
+
 ### PENDENTE
-Escolha entre `medium` e `large-v3-turbo`, que depende da marcação do Danilo em
-`~/Downloads/Transcricoes/COMPARACAO-modelos-transcricao.md` (145 diferenças de
-palavra, pontuação já descartada). Enquanto isso o padrão segue `medium`.
+- Aplicar `large-v3-turbo` como padrão, após conferir repetição em áudio longo
+- Gerar o complementar de comparação com os casos de negação que o filtro escondia,
+  em arquivo novo. O arquivo atual tem 39 marcações do Danilo e não se sobrescreve
+- Filtro de muletas de fala, com saída limpa ao lado da fiel, escopo a definir
 
 ---
 

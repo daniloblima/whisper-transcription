@@ -699,9 +699,13 @@ def save_final_output(segments, output_file):
 def main():
     parser = argparse.ArgumentParser(description='Transcrição com diarização usando Whisper + Sherpa-ONNX')
     parser.add_argument('input_file', help='Arquivo de vídeo ou áudio')
-    parser.add_argument('--model', default='medium',
+    # large-v3-turbo virou padrão em 21/08/2026, decidido pela marcação do Danilo em
+    # 39 pontos de discordância (23 a 11 a favor dele) e pelo princípio que ele
+    # levantou: transcrever fiel e limpar depois, porque o que o modelo descarta na
+    # transcrição não volta. Conferido contra laço em áudio de 1h09.
+    parser.add_argument('--model', default='large-v3-turbo',
                        choices=['tiny', 'base', 'small', 'medium', 'large', 'large-v3-turbo'],
-                       help='Modelo Whisper (padrão: medium)')
+                       help='Modelo Whisper (padrão: large-v3-turbo)')
     parser.add_argument('--threshold', type=float, default=THRESHOLD_PADRAO,
                        help=f'Threshold para diarização (padrão: {THRESHOLD_PADRAO})')
     parser.add_argument('--speakers', type=int, default=None, metavar='N',

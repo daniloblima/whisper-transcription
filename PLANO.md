@@ -137,8 +137,8 @@ processamento para cada combinação, mais uma escolha justificada por número.
 - [x] Desempate na aula de duas vozes, resolvido pelo ouvido do Danilo
 - [x] Modelo escolhido e aplicado: wespeaker resnet34 LM, limiar 0,92
 - [x] Droplet remapeado: teto em vez de número fixo, de duas pessoas em diante
-- [ ] Escolha entre `medium` e `large-v3-turbo`, dependente da marcação do Danilo em
-      `~/Downloads/Transcricoes/COMPARACAO-modelos-transcricao.md`
+- [x] Escolha do modelo de transcrição: `large-v3-turbo`, por 23 a 11 nas 39
+      marcações do Danilo, conferido contra laço em áudio de 1h09
 
 ---
 
@@ -177,3 +177,39 @@ Sem esse segundo áudio, a escolha teria sido no cara ou coroa.
 devolveram o número certo de falantes, e duas delas o fizeram colando as duas vozes
 numa e sobrando um resto de 2 minutos. Qualquer medição futura de diarização olha a
 distribuição de tempo junto com a contagem.
+
+
+---
+
+## Fechamento — 21/08/2026
+
+As três fases estão concluídas. Os dois motores do projeto foram trocados por
+medição em áudios reais do Danilo, não por reputação de modelo.
+
+| o quê | antes | depois |
+|---|---|---|
+| formatos aceitos | 7 | 21, com `.opus` do WhatsApp |
+| controle de falantes | nenhum | `--speakers`, `--max-speakers`, seis opções no app |
+| modelo de voz | eres2net base zh-cn, 40 MB | wespeaker resnet34 LM, 26 MB |
+| limiar | 0,75 | 0,92 |
+| modelo de transcrição | `medium` | `large-v3-turbo` |
+| whisper.cpp | 1.8.3 | 1.9.2 |
+| sherpa-onnx | 1.12.18 | 1.13.6 |
+
+Medida do ganho, na aula de 1h09 com duas pessoas: de 7 falantes detectados para 2,
+separados nos pontos certos.
+
+## O que ficou aberto
+
+**Filtro de muletas de fala.** Princípio acordado com o Danilo: transcrever fiel e
+gerar a versão limpa ao lado da bruta, nunca por cima. Os inequívocos ("ãh", "hum")
+por regra fixa; os ambíguos ("né", "tipo", "assim") pela skill, porque as mesmas
+palavras têm uso legítimo. Régua vinda da revisão dele: quando não dá para pontuar
+corretamente uma muleta, omitir causa menos dano que incluir sem a vírgula.
+
+Não iniciado por decisão de escopo. Vale como frente própria, e ela deveria começar
+medindo quais muletas aparecem de fato nas transcrições existentes, do mesmo jeito
+que o `glossario.json` nasceu das correções reais em vez de uma lista inventada.
+
+**Negação sem vírgula.** Encerrado sem construir nada, por decisão do Danilo em
+21/08/2026. Ver CHANGELOG.
