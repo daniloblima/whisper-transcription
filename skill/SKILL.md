@@ -130,6 +130,38 @@ Apresentar os candidatos ao usuário antes de gravar, com o motivo de cada um, e
 - Inventar correção quando há dúvida (perguntar ao usuário)
 - Corrigir gramática da fala oral
 
+## Aprendizados do lote de 47 aulas (01/09/2026)
+
+Primeira vez que a skill enfrentou volume grande de uma vez: 47 transcrições, 200 mil palavras, 673 correções. O detalhe de cada padrão está em `PADROES-DE-ERRO.md`, na raiz do projeto. O que muda para a skill:
+
+### Três erros invertem o sentido sem quebrar a frase
+
+São os únicos perigosos, porque a frase continua gramatical e o leitor absorve o contrário do que foi dito.
+
+1. **O prefixo "des" some.** "desigual" vira "igual". Apareceu quatro vezes, sempre em trecho cujo parágrafo argumentava o oposto.
+2. **"sofisticação" vira "simplificação".** Duas vezes, invertendo a tese do material.
+3. **O "%" gruda em ano.** "em 82%" onde se lê "em 82". Não corrigir por script onde o texto mistura anos e percentuais.
+
+Vale começar toda revisão buscando "mais igual", "mais iguais" e "simplificação", e lendo o parágrafo em volta.
+
+### Erro do palestrante não é erro de transcrição
+
+Quando o material traz afirmação factualmente errada dita pela própria pessoa, a transcrição está certa. **Política definida por Danilo em 01/09/2026:** não mexer no texto. Inserir uma `NOTA DE VERIFICAÇÃO` no ponto exato, com o fato correto, e um aviso no cabeçalho do arquivo, para quem abrir saber de saída que há afirmação incorreta ali dentro.
+
+### Não completar o nome que o falante encurtou
+
+Corrigir o nome errado, na forma que o falante usa. Se ele diz "Albert Barabási", não virar "Albert-László Barabási", ainda que esse seja o nome completo. E quando o primeiro nome está errado de um jeito que pode ter sido erro do palestrante, e não da máquina, a troca deixa de ser fiel ao áudio: isso vai para a lista de decisões do dono do material, não para a correção automática.
+
+### Método, para correção em lote
+
+- **Fazer backup antes**, e no fim rodar um diff palavra a palavra contra ele. É o único jeito de auditar o que se fez.
+- **Contar o que deveria ser invariante:** carimbos de tempo, marcadores de falante, número de arquivos. Substituição de expressão com várias palavras come o carimbo que fica entre elas, e isso não aparece na leitura do texto. Aconteceu: 34 carimbos perdidos em 16 arquivos, descobertos só porque Danilo desconfiou de outra coisa.
+- **Ao substituir expressão de várias palavras**, capturar os separadores como grupos e recolocá-los entre as palavras novas.
+
+### A terceira camada é entregável
+
+Depois do glossário e da leitura de contexto, o que sobra vira documento com **aula e instante de cada dúvida**, para o dono ouvir o trecho e decidir. Sem isso a correção vira caixa-preta. No curso do Gala esse documento tinha 27 pontos em quatro grupos, e Danilo resolveu todos numa passada.
+
 ## Prioridade de fontes
 1. Respostas do usuário (maior prioridade)
 2. Referências fornecidas (arquivos, URLs, glossários)

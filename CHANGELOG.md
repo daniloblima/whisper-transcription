@@ -1,5 +1,18 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 01/09/2026 — primeiro lote grande: 47 aulas, e o que ele ensinou
+
+Correção de 47 transcrições do curso de Paulo Gala, 200 mil palavras, 673 correções aplicadas. É o primeiro volume grande o suficiente para separar padrão de acaso, e rendeu três coisas.
+
+**O glossário saiu de 30 para 111 termos.** Entraram os nomes que o Whisper deforma sempre igual: Roderick para Rodrik, Barabase para Barabási, Caldor para Kaldor, Klugmann e Kuhlman para Krugman, Girdrie para Deirdre McCloskey, criometria para cliometria, urna de polia para urna de Pólya, e mais três dezenas. Todos são nome próprio, sigla ou termo técnico, que é o critério do arquivo.
+
+**Nasceu o `PADROES-DE-ERRO.md`**, com nove padrões observados. Os três primeiros invertem o sentido da frase: o Whisper come o prefixo "des" e transforma "desigual" em "igual", troca "sofisticação" por "simplificação", e cola "%" depois de ano.
+
+**Um erro de método, que é o mais importante.** A substituição de expressões com mais de uma palavra comia o carimbo de tempo que ficava entre elas. Foram 34 carimbos perdidos em 16 arquivos, e ninguém teria notado lendo o texto, porque o texto ficava perfeito. Descoberto num diff contra o backup, feito só porque Danilo desconfiou de uma correção não relacionada. Ficou a regra: depois de correção em lote, contar o que deveria ser invariante e comparar com o backup.
+
+**Uma política nova, decidida por Danilo.** Quando o erro é do palestrante e não da máquina, a transcrição continua fiel e o arquivo ganha uma `NOTA DE VERIFICAÇÃO` no ponto, com o fato correto, mais um aviso no cabeçalho. Sete casos no curso do Gala.
+
+
 > **PROPÓSITO**: Este arquivo registra TODOS os problemas, bugs, decisões técnicas e soluções encontradas durante o desenvolvimento. É consultado OBRIGATORIAMENTE após cada compactação de contexto para evitar perda de informação.
 
 ---

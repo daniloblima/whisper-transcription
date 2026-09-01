@@ -10,6 +10,16 @@ Sistema local completo para transcrição de áudio/vídeo com identificação d
 
 ---
 
+## Antes de corrigir uma transcrição, leia isto
+
+`PADROES-DE-ERRO.md` reúne os padrões de erro do Whisper observados no uso, com o que fazer em cada um. Foi escrito a partir da correção de 47 aulas de uma vez, e é o que separa erro recorrente de acaso.
+
+Três deles invertem o sentido da frase sem quebrar a gramática, e são os que passam despercebidos: o prefixo "des" que some, "sofisticação" que vira "simplificação", e o "%" que gruda em ano.
+
+Há também uma regra de método que vale para qualquer correção em lote: fazer backup, e no fim contar o que deveria ser invariante, porque degradação de estrutura não aparece na leitura do texto.
+
+---
+
 ## 🚀 USO RÁPIDO (GUI - RECOMENDADO)
 
 ### Opção 1: Interface Gráfica (Arrasta e Solta)

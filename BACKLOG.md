@@ -60,3 +60,16 @@ Ficam no Mac mas fora do GitHub. Consultar se precisar:
 - `explore_sherpa_api.py` / `explore_sherpa_api2.py` — exploração da API Sherpa-ONNX
 - `test_*.py` — scripts de teste de desenvolvimento (threshold, otimização, comparação)
 - `podcast` — atalho de linha de comando para transcribe_fast.py
+
+---
+
+## Vindos do lote de 47 aulas (01/09/2026)
+
+Ver `PADROES-DE-ERRO.md` para o detalhe de cada um.
+
+- [ ] **Aviso de inversão de sentido no fim da transcrição.** O script poderia buscar "mais igual", "mais iguais", "simplificação produtiva" e afins, e listar as ocorrências como "conferir no contexto". Não corrigir, só apontar. São os erros que passam despercebidos porque a frase continua plausível.
+- [ ] **Relatório de nomes próprios candidatos.** Extrair as palavras capitalizadas, ordenar por frequência e mostrar as de cauda ao lado das formas parecidas mais frequentes. Nome deformado quase sempre aparece com duas ou três ocorrências ao lado da forma correta.
+- [ ] **Contagem de invariantes no fim de toda correção em lote.** Carimbos de tempo, marcadores de falante e número de arquivos, comparados com o estado anterior. Deveria ser automático, e não depender de alguém desconfiar.
+- [ ] **Sinalizar "%" colado em ano.** Padrão claro, mas correção automática é arriscada onde o texto mistura anos e percentuais. Só apontar.
+- [ ] **Suporte a nota de verificação.** Um jeito padronizado de inserir `NOTA DE VERIFICAÇÃO` no corpo mais aviso no cabeçalho, para o caso de erro do palestrante. Hoje é manual.
+

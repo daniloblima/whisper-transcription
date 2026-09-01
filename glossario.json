@@ -22,43 +22,597 @@
     "que esta no .gitignore e nunca sai da sua maquina. O script le os dois e soma.",
     "O arquivo local tem exatamente o mesmo formato deste."
   ],
-
   "termos": [
-    { "de": "Minquedinho",   "para": "LinkedIn",       "exato": false, "nota": "foneticamente Lin-que-din" },
-    { "de": "Substeck",      "para": "Substack",       "exato": false },
-    { "de": "Connect Lab",   "para": "konekt.lab",     "exato": false, "nota": "a marca e sempre minuscula" },
-    { "de": "konekt lab",    "para": "konekt.lab",     "exato": false },
-    { "de": "Coneckt",       "para": "konekt",         "exato": false },
-    { "de": "OpenENI",       "para": "OpenAI",         "exato": false },
-    { "de": "image flips",   "para": "imgflip",        "exato": false },
-
-    { "de": "FRJ",           "para": "UFRJ",           "exato": true,  "nota": "limite de palavra impede casar dentro de UFRJ" },
-    { "de": "FAPERD",        "para": "FAPERJ",         "exato": false },
-    { "de": "FAPEZ",         "para": "FAPESP",         "exato": false },
-    { "de": "em Brapi",      "para": "EMBRAPII",       "exato": false },
-    { "de": "EDMEC",         "para": "AMEC",           "exato": false },
-    { "de": "DMACC",         "para": "AMEC",           "exato": false },
-    { "de": "ANEL",          "para": "ANEEL",          "exato": true,  "nota": "exato: 'anel' minusculo e palavra comum" },
-    { "de": "t r l",         "para": "TRL",            "exato": false, "nota": "sigla soletrada pelo Whisper" },
-    { "de": "DIPPEC",        "para": "Deep Tech",      "exato": false },
-    { "de": "Pocky",         "para": "POC",            "exato": false },
-    { "de": "caque",         "para": "CAC",            "exato": false, "nota": "custo de aquisicao de cliente" },
-
-    { "de": "Raizen",        "para": "Raízen",         "exato": false, "nota": "acentuacao" },
-    { "de": "Cachura",       "para": "Cachoeira",      "exato": false },
-    { "de": "Sapuccaí",      "para": "Sapucaí",        "exato": false },
-
-    { "de": "hidralétrica",  "para": "hidroelétrica",  "exato": false },
-    { "de": "hidralétricas", "para": "hidroelétricas", "exato": false },
-    { "de": "canadeaçúcar",  "para": "cana-de-açúcar", "exato": false },
-    { "de": "oligais",       "para": "oil gas",        "exato": false },
-    { "de": "start-up",      "para": "startup",        "exato": false },
-    { "de": "start-ups",     "para": "startups",       "exato": false },
-    { "de": "perfocado",     "para": "hiperfocado",    "exato": false },
-    { "de": "planívias",     "para": "planilhas",      "exato": false },
-    { "de": "submiti",       "para": "submeti",        "exato": false }
+    {
+      "de": "Minquedinho",
+      "para": "LinkedIn",
+      "exato": false,
+      "nota": "foneticamente Lin-que-din"
+    },
+    {
+      "de": "Substeck",
+      "para": "Substack",
+      "exato": false
+    },
+    {
+      "de": "Connect Lab",
+      "para": "konekt.lab",
+      "exato": false,
+      "nota": "a marca e sempre minuscula"
+    },
+    {
+      "de": "konekt lab",
+      "para": "konekt.lab",
+      "exato": false
+    },
+    {
+      "de": "Coneckt",
+      "para": "konekt",
+      "exato": false
+    },
+    {
+      "de": "OpenENI",
+      "para": "OpenAI",
+      "exato": false
+    },
+    {
+      "de": "image flips",
+      "para": "imgflip",
+      "exato": false
+    },
+    {
+      "de": "FRJ",
+      "para": "UFRJ",
+      "exato": true,
+      "nota": "limite de palavra impede casar dentro de UFRJ"
+    },
+    {
+      "de": "FAPERD",
+      "para": "FAPERJ",
+      "exato": false
+    },
+    {
+      "de": "FAPEZ",
+      "para": "FAPESP",
+      "exato": false
+    },
+    {
+      "de": "em Brapi",
+      "para": "EMBRAPII",
+      "exato": false
+    },
+    {
+      "de": "EDMEC",
+      "para": "AMEC",
+      "exato": false
+    },
+    {
+      "de": "DMACC",
+      "para": "AMEC",
+      "exato": false
+    },
+    {
+      "de": "ANEL",
+      "para": "ANEEL",
+      "exato": true,
+      "nota": "exato: 'anel' minusculo e palavra comum"
+    },
+    {
+      "de": "t r l",
+      "para": "TRL",
+      "exato": false,
+      "nota": "sigla soletrada pelo Whisper"
+    },
+    {
+      "de": "DIPPEC",
+      "para": "Deep Tech",
+      "exato": false
+    },
+    {
+      "de": "Pocky",
+      "para": "POC",
+      "exato": false
+    },
+    {
+      "de": "caque",
+      "para": "CAC",
+      "exato": false,
+      "nota": "custo de aquisicao de cliente"
+    },
+    {
+      "de": "Raizen",
+      "para": "Raízen",
+      "exato": false,
+      "nota": "acentuacao"
+    },
+    {
+      "de": "Cachura",
+      "para": "Cachoeira",
+      "exato": false
+    },
+    {
+      "de": "Sapuccaí",
+      "para": "Sapucaí",
+      "exato": false
+    },
+    {
+      "de": "hidralétrica",
+      "para": "hidroelétrica",
+      "exato": false
+    },
+    {
+      "de": "hidralétricas",
+      "para": "hidroelétricas",
+      "exato": false
+    },
+    {
+      "de": "canadeaçúcar",
+      "para": "cana-de-açúcar",
+      "exato": false
+    },
+    {
+      "de": "oligais",
+      "para": "oil gas",
+      "exato": false
+    },
+    {
+      "de": "start-up",
+      "para": "startup",
+      "exato": false
+    },
+    {
+      "de": "start-ups",
+      "para": "startups",
+      "exato": false
+    },
+    {
+      "de": "perfocado",
+      "para": "hiperfocado",
+      "exato": false
+    },
+    {
+      "de": "planívias",
+      "para": "planilhas",
+      "exato": false
+    },
+    {
+      "de": "submiti",
+      "para": "submeti",
+      "exato": false
+    },
+    {
+      "de": "Barry Iken Green",
+      "para": "Barry Eichengreen",
+      "exato": false,
+      "nota": "economista de Berkeley; o Whisper quebra o sobrenome em duas palavras"
+    },
+    {
+      "de": "Iken Green",
+      "para": "Eichengreen",
+      "exato": false
+    },
+    {
+      "de": "Willem Goldfein",
+      "para": "Ilan Goldfajn",
+      "exato": false,
+      "nota": "presidente do BC no governo Temer; o Whisper erra nome e sobrenome"
+    },
+    {
+      "de": "Goldfein",
+      "para": "Goldfajn",
+      "exato": false
+    },
+    {
+      "de": "Tom Beany",
+      "para": "Tombini",
+      "exato": false,
+      "nota": "Alexandre Tombini, presidente do BC em 2013-2014; o Whisper parte o sobrenome"
+    },
+    {
+      "de": "Tom Bini",
+      "para": "Tombini",
+      "exato": false
+    },
+    {
+      "de": "Danny Roderick",
+      "para": "Dani Rodrik",
+      "exato": false,
+      "nota": "Dani Rodrik, de Harvard"
+    },
+    {
+      "de": "Danny Rodrik",
+      "para": "Dani Rodrik",
+      "exato": false
+    },
+    {
+      "de": "Douglas North",
+      "para": "Douglass North",
+      "exato": false,
+      "nota": "Douglass com dois s"
+    },
+    {
+      "de": "Delfi Neto",
+      "para": "Delfim Netto",
+      "exato": false
+    },
+    {
+      "de": "Delfim Neto",
+      "para": "Delfim Netto",
+      "exato": false
+    },
+    {
+      "de": "Ricardo Rausman",
+      "para": "Ricardo Hausmann",
+      "exato": false
+    },
+    {
+      "de": "Alice Amesden",
+      "para": "Alice Amsden",
+      "exato": false,
+      "nota": "autora de Asia's Next Giant"
+    },
+    {
+      "de": "plano Morgenthal",
+      "para": "plano Morgenthau",
+      "exato": false
+    },
+    {
+      "de": "Roderick",
+      "para": "Rodrik",
+      "exato": false
+    },
+    {
+      "de": "Rausman",
+      "para": "Hausmann",
+      "exato": false
+    },
+    {
+      "de": "Hausman",
+      "para": "Hausmann",
+      "exato": false,
+      "nota": "limite de palavra impede casar dentro de Hausmann"
+    },
+    {
+      "de": "Klugmann",
+      "para": "Krugman",
+      "exato": false
+    },
+    {
+      "de": "Caldor",
+      "para": "Kaldor",
+      "exato": false
+    },
+    {
+      "de": "Mirdon",
+      "para": "Myrdal",
+      "exato": false
+    },
+    {
+      "de": "Nürx",
+      "para": "Nurkse",
+      "exato": false
+    },
+    {
+      "de": "Prebich",
+      "para": "Prebisch",
+      "exato": false
+    },
+    {
+      "de": "Chumpeter",
+      "para": "Schumpeter",
+      "exato": false,
+      "nota": "limite de palavra impede casar dentro de Schumpeter"
+    },
+    {
+      "de": "Barabase",
+      "para": "Barabási",
+      "exato": false,
+      "nota": "Albert-Laszlo Barabasi, fisico de redes"
+    },
+    {
+      "de": "Barabás",
+      "para": "Barabási",
+      "exato": false
+    },
+    {
+      "de": "Barabasi",
+      "para": "Barabási",
+      "exato": false
+    },
+    {
+      "de": "Balmol",
+      "para": "Baumol",
+      "exato": false,
+      "nota": "doenca de Baumol"
+    },
+    {
+      "de": "Amesden",
+      "para": "Amsden",
+      "exato": false
+    },
+    {
+      "de": "Hadjoon",
+      "para": "Ha-Joon",
+      "exato": false,
+      "nota": "Ha-Joon Chang"
+    },
+    {
+      "de": "Hadjong",
+      "para": "Ha-Joon",
+      "exato": false
+    },
+    {
+      "de": "Surrarto",
+      "para": "Suharto",
+      "exato": false,
+      "nota": "ditador da Indonesia"
+    },
+    {
+      "de": "Sarnay",
+      "para": "Sarney",
+      "exato": false
+    },
+    {
+      "de": "Bressa",
+      "para": "Bresser",
+      "exato": false,
+      "nota": "Bresser-Pereira; limite de palavra protege Bresser"
+    },
+    {
+      "de": "Pércio",
+      "para": "Pérsio",
+      "exato": false,
+      "nota": "Persio Arida"
+    },
+    {
+      "de": "Pusco",
+      "para": "POSCO",
+      "exato": false,
+      "nota": "siderurgica coreana"
+    },
+    {
+      "de": "Color",
+      "para": "Collor",
+      "exato": false,
+      "nota": "plano Collor; conferido, as 28 ocorrencias sao do plano"
+    },
+    {
+      "de": "Malau",
+      "para": "Malaui",
+      "exato": false,
+      "nota": "pais, aparece em lista com Etiopia e Tanzania"
+    },
+    {
+      "de": "Eric Heiner",
+      "para": "Erik Reinert",
+      "exato": false,
+      "nota": "economista noruegues, Como os Paises Ricos Ficaram Ricos"
+    },
+    {
+      "de": "Heinert",
+      "para": "Reinert",
+      "exato": false
+    },
+    {
+      "de": "Wallen Yang",
+      "para": "Allyn Young",
+      "exato": false,
+      "nota": "economista dos retornos crescentes, 1928"
+    },
+    {
+      "de": "Parabase",
+      "para": "Barabási",
+      "exato": false
+    },
+    {
+      "de": "Kuhlman",
+      "para": "Krugman",
+      "exato": false
+    },
+    {
+      "de": "chumpeteriana",
+      "para": "schumpeteriana",
+      "exato": false
+    },
+    {
+      "de": "chumpeterianas",
+      "para": "schumpeterianas",
+      "exato": false
+    },
+    {
+      "de": "neochupeterianos",
+      "para": "neoschumpeterianos",
+      "exato": false
+    },
+    {
+      "de": "Armisen",
+      "para": "Amsden",
+      "exato": false
+    },
+    {
+      "de": "Haussmann",
+      "para": "Hausmann",
+      "exato": false
+    },
+    {
+      "de": "Lundval",
+      "para": "Lundvall",
+      "exato": false,
+      "nota": "sistemas nacionais de inovacao"
+    },
+    {
+      "de": "criometria",
+      "para": "cliometria",
+      "exato": false,
+      "nota": "Clio, musa da historia"
+    },
+    {
+      "de": "criometristas",
+      "para": "cliometristas",
+      "exato": false
+    },
+    {
+      "de": "Girdrie McCloskey",
+      "para": "Deirdre McCloskey",
+      "exato": false
+    },
+    {
+      "de": "Jerry Diamond",
+      "para": "Jared Diamond",
+      "exato": false
+    },
+    {
+      "de": "Edmar Baixa",
+      "para": "Edmar Bacha",
+      "exato": false
+    },
+    {
+      "de": "Persuari",
+      "para": "Pérsio Arida",
+      "exato": false
+    },
+    {
+      "de": "Persu Alida",
+      "para": "Pérsio Arida",
+      "exato": false
+    },
+    {
+      "de": "Amínio Fraga",
+      "para": "Armínio Fraga",
+      "exato": false
+    },
+    {
+      "de": "Roberto Frankl",
+      "para": "Roberto Frenkel",
+      "exato": false
+    },
+    {
+      "de": "Lance Taylor",
+      "para": "Lance Taylor",
+      "exato": false,
+      "nota": "grafia correta, mantida como referencia"
+    },
+    {
+      "de": "calequeano",
+      "para": "kaleckiano",
+      "exato": false,
+      "nota": "Michal Kalecki"
+    },
+    {
+      "de": "Roberto French Davis",
+      "para": "Ricardo Ffrench-Davis",
+      "exato": false
+    },
+    {
+      "de": "Dominique Hartmann",
+      "para": "Dominik Hartmann",
+      "exato": false
+    },
+    {
+      "de": "Dominic Hartmann",
+      "para": "Dominik Hartmann",
+      "exato": false
+    },
+    {
+      "de": "John Kerry",
+      "para": "John Cary",
+      "exato": false,
+      "nota": "mercantilista ingles; cuidado se o audio for de politica americana"
+    },
+    {
+      "de": "urna de polia",
+      "para": "urna de Pólya",
+      "exato": false,
+      "nota": "George Polya"
+    },
+    {
+      "de": "processo de Yules",
+      "para": "processo de Yule",
+      "exato": false
+    },
+    {
+      "de": "Volst, Alpine",
+      "para": "Voestalpine",
+      "exato": false
+    },
+    {
+      "de": "massa e fergos",
+      "para": "Massey Ferguson",
+      "exato": false
+    },
+    {
+      "de": "Chicago Air",
+      "para": "Chicago O'Hare",
+      "exato": false
+    },
+    {
+      "de": "bem Bernanke",
+      "para": "Ben Bernanke",
+      "exato": false
+    },
+    {
+      "de": "Dualdi",
+      "para": "Duhalde",
+      "exato": false
+    },
+    {
+      "de": "Chaibol",
+      "para": "chaebol",
+      "exato": false,
+      "nota": "conglomerado coreano"
+    },
+    {
+      "de": "ubico",
+      "para": "ubíquo",
+      "exato": false,
+      "nota": "conceito da complexidade economica"
+    },
+    {
+      "de": "ubicos",
+      "para": "ubíquos",
+      "exato": false
+    },
+    {
+      "de": "ubicuidade",
+      "para": "ubiquidade",
+      "exato": false
+    },
+    {
+      "de": "Cangilim",
+      "para": "Gergelim",
+      "exato": false
+    },
+    {
+      "de": "esteralidades",
+      "para": "externalidades",
+      "exato": false
+    },
+    {
+      "de": "Conselho de Washington",
+      "para": "Consenso de Washington",
+      "exato": false
+    },
+    {
+      "de": "efeito balaça Samuelson",
+      "para": "efeito Balassa-Samuelson",
+      "exato": false
+    },
+    {
+      "de": "Robson-Cruzoé",
+      "para": "Robinson Crusoé",
+      "exato": false
+    },
+    {
+      "de": "chumpeteriano",
+      "para": "schumpeteriano",
+      "exato": false
+    },
+    {
+      "de": "chumpeterianos",
+      "para": "schumpeterianos",
+      "exato": false
+    }
   ],
-
   "_fora_de_proposito": [
     "Termos que apareceram nas correcoes ja feitas e ficaram DE FORA de proposito,",
     "para o script nunca estragar texto correto. Todos dependem de contexto e sao",
