@@ -201,6 +201,15 @@ A skill mora em `skill/`, dentro deste projeto, com symlink em
 ### transcribe_complete.py ⭐ (RECOMENDADO)
 Faz tudo automaticamente: os 5 passos, da extração de áudio à correção de termos.
 
+### aplicar_correcoes.py
+Aplica correções declaradas num JSON, com backup, log estruturado e cinco travas
+que impedem apagar fala, perder carimbo de tempo ou aplicar regra larga demais.
+Nenhuma correção se aplica editando o arquivo. Formato em `FORMATO-CORRECOES.md`.
+
+### varrer_suspeitas.py
+Varre transcrições e escreve um `00 A RESOLVER na revisão.md` com os pontos que
+merecem leitura humana. Aponta, nunca corrige.
+
 ### corrigir_termos.py
 Aplica só o glossário, sobre um arquivo de transcrição já existente. Útil para
 recuperar transcrições antigas, feitas antes de o glossário existir.

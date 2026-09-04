@@ -100,7 +100,17 @@ A saída é um documento no formato do `00 A RESOLVER`, com arquivo e instante d
 
 **Critério de sucesso.** Rodar sobre as 50 aulas já conferidas e reencontrar os casos conhecidos: as quatro ocorrências de "des" comido, as duas de "simplificação", o ECI contra ICI, as duas alucinações de legendagem. O que ele achar além disso é ganho; o que ele não achar vira caso de teste.
 
-**Estado:** não iniciada.
+**Estado:** [x] CONCLUÍDA em 04/09/2026. `varrer_suspeitas.py` na raiz, skill ligada a ele.
+
+Testado contra dois corpora do mesmo acervo, que é o contraste que mede calibragem: as 47 aulas da segunda passada, que nunca receberam correção de contexto, e as 50 aulas conferidas em três rodadas. O primeiro rende 123 pontos, o segundo 80, e as duas alucinações de legendagem aparecem só no primeiro, porque no segundo já foram tratadas.
+
+Os casos conhecidos foram reencontrados, e o ECI contra ICI custou um ajuste: sigla de três letras com uma diferente dá semelhança 0,67, abaixo de qualquer corte razoável para nome. Passou a usar distância de uma letra quando a forma tem até quatro caracteres.
+
+A calibragem foi o trabalho da fase, não as varreduras. A primeira versão devolvia 543 pontos, quase todos ruído de palavra comum capitalizada por estar em começo de frase. O critério que resolveu não usa lista de exceções: palavra que aparece em minúscula três vezes ou mais no acervo não é nome próprio. Com ele, mais o descarte de plural, de algarismo romano e do texto editorial das notas, a fila caiu para 123.
+
+**Precisão medida, e ela é desigual de propósito.** Numa amostra de 25 achados de nome no material cru, cerca de metade são deformação real: Reinhardt por Reinert, Kroningen por Groningen, Hasma por Hausmann, Donésia por Indonésia, Emitidos por Emirados. No material já revisado a proporção despenca, e das sete conferidas à mão só duas eram erro. Isso não é defeito: é a varredura concordando com o trabalho já feito. A consequência de desenho é que o relatório se gera logo depois da transcrição, não depois da revisão.
+
+**As duas que escaparam de três rodadas**, achadas por ela e conferidas no texto: "urnas de Polia" onde o dicionário manda "urnas de Pólya", e "Gines muito diferentes" onde se lê "Ginis".
 
 ---
 

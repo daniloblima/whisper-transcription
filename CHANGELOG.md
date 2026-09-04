@@ -1,5 +1,30 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 04/09/2026 — Fase 2: varreduras de suspeita
+
+### OBJETIVO
+Transformar "leia duzentas mil palavras" em "olhe estes pontos". Os erros que importam são gramaticalmente corretos e não acusam nada na leitura.
+
+### SOLUÇÃO
+`varrer_suspeitas.py`, com seis varreduras que rodam sem contexto nenhum e não corrigem nada: inversão de sentido, `%` colado em ano, alucinação de legendagem com peso maior perto do fim do arquivo, capitalizada rara ao lado de forma parecida frequente, sigla ou nome grafado de dois jeitos no mesmo arquivo, e cicatriz de substituição. A saída é um `00 A RESOLVER na revisão.md` agrupado por natureza, com arquivo e instante.
+
+### O TRABALHO FOI A CALIBRAGEM, NÃO AS VARREDURAS
+A primeira versão devolveu 543 pontos em 47 aulas, quase todos ruído: 'Nessas', 'Veja', 'Quatro', 'Muitos' — palavra comum capitalizada por estar em começo de frase. O critério que resolveu não precisa de lista de exceções nem de dicionário externo: palavra que aparece em minúscula três vezes ou mais no acervo não é nome próprio. Com ele, mais o descarte de plural, de algarismo romano e do texto editorial das notas de verificação, a fila caiu para 123.
+
+### O AJUSTE QUE O ECI CONTRA ICI OBRIGOU
+Semelhança proporcional não serve para sigla curta: 'ECI' e 'ICI' diferem por uma letra e a razão dá 0,67, abaixo de qualquer corte razoável para nome. Foi preciso um critério separado de distância de uma letra para formas de até quatro caracteres. Sem ele, o caso que mais motivou a varredura escapava dela.
+
+### RESULTADOS
+Dois corpora do mesmo acervo, que é o contraste que mede calibragem. As 47 aulas da segunda passada, nunca corrigidas por contexto, rendem 123 pontos com as duas alucinações de legendagem. As 50 aulas conferidas em três rodadas rendem 80 e nenhuma alucinação, porque já foram tratadas.
+
+Precisão desigual, e de propósito: no material cru, cerca de metade dos achados de nome são deformação real; no revisado, das sete conferidas à mão só duas eram erro. Consequência de desenho: o relatório se gera logo depois da transcrição, não depois da revisão.
+
+Duas escaparam de três rodadas de revisão humana e foram achadas por ela: "urnas de Polia" onde o dicionário manda "Pólya", e "Gines muito diferentes" onde se lê "Ginis".
+
+### LIÇÃO
+Varredura sem calibragem contra corpus real é lista, não fila. E o corpus que calibra precisa ser dois: material cru para medir o que ela acha, material revisado para medir o que ela inventa.
+
+
 ## 04/09/2026 — Fase 1: o aplicador único de correções
 
 ### OBJETIVO

@@ -60,7 +60,12 @@ Perguntar ao usuário usando AskUserQuestion:
 Se o usuário já forneceu parte dessas informações na mensagem inicial, não perguntar de novo. Preencher o que falta.
 
 ### 2. Leitura e análise
-Ler o arquivo completo e classificar erros em 3 categorias:
+
+Antes de ler, rodar `python3 varrer_suspeitas.py <arquivo ou pasta>`. Ele devolve um `00 A RESOLVER na revisão.md` com os pontos que merecem olho: inversão de sentido, alucinação de legendagem, sigla ou nome grafado de dois jeitos, capitalizada rara ao lado de forma parecida frequente, `%` colado em ano e cicatriz de substituição. Ele não corrige nada e erra bastante — a fila é ponto de partida da leitura, não conclusão.
+
+A varredura rende mais sobre transcrição recém-saída do motor. Sobre material já revisado, a maior parte do que ela aponta é legítima.
+
+Depois, ler o arquivo e classificar erros em 3 categorias:
 
 **Erros óbvios** (corrigir sem perguntar):
 - Palavras que não existem em português
