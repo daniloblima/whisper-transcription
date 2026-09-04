@@ -160,7 +160,7 @@ Corrigir o nome errado, na forma que o falante usa. Se ele diz "Albert Barabási
 
 ### A terceira camada é entregável
 
-Depois do glossário e da leitura de contexto, o que sobra vira documento com **aula e instante de cada dúvida**, para o dono ouvir o trecho e decidir. Sem isso a correção vira caixa-preta. No curso do Gala esse documento tinha 27 pontos em quatro grupos, e Danilo resolveu todos numa passada.
+Depois do glossário e da leitura de contexto, o que sobra vira documento com **aula e instante de cada dúvida**, para o dono ouvir o trecho e decidir. Sem isso a correção vira caixa-preta. No curso conferido esse documento tinha 27 pontos em quatro grupos, e Danilo resolveu todos numa passada.
 
 ## Prioridade de fontes
 1. Respostas do usuário (maior prioridade)

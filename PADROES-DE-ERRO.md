@@ -2,7 +2,7 @@
 
 Documento vivo. Cada entrada é um padrão que apareceu em volume suficiente para valer regra, e não um caso isolado. Serve de insumo para o `glossario.json`, para a skill `/arrumar-transcricao` e para o `transcribe_complete.py`.
 
-Criado em 01/09/2026, a partir da correção de 47 aulas do curso de Paulo Gala (200 mil palavras, 673 correções). É a primeira base grande o suficiente para separar padrão de acaso.
+Criado em 01/09/2026, a partir da correção de 47 aulas de um curso de economia (200 mil palavras, 673 correções). É a primeira base grande o suficiente para separar padrão de acaso.
 
 ---
 
@@ -64,7 +64,7 @@ Ao trocar uma expressão de duas ou mais palavras, o padrão de busca precisa at
 
 ## 8. Erro do palestrante não é erro de transcrição
 
-Sete passagens do curso traziam afirmação incorreta do próprio Paulo Gala: Cortés no lugar de Pizarro, Eichengreen na UCLA em vez de Berkeley, Maersk como sueca. A transcrição estava fiel.
+Sete passagens do curso traziam afirmação incorreta do próprio palestrante: Cortés no lugar de Pizarro, Eichengreen na UCLA em vez de Berkeley, Maersk como sueca. A transcrição estava fiel.
 
 **A política adotada, por decisão de Danilo:** não corrigir o texto. Inserir uma `NOTA DE VERIFICAÇÃO` no ponto exato, com o fato correto, e um aviso no cabeçalho do arquivo para quem abrir saber de saída que há afirmação incorreta ali dentro.
 

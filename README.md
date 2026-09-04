@@ -12,7 +12,9 @@ Sistema local completo para transcrição de áudio/vídeo com identificação d
 
 ## Antes de corrigir uma transcrição, leia isto
 
-`PADROES-DE-ERRO.md` reúne os padrões de erro do Whisper observados no uso, com o que fazer em cada um. Foi escrito a partir da correção de 47 aulas de uma vez, e é o que separa erro recorrente de acaso.
+`PADROES-DE-ERRO.md` reúne os padrões de erro do Whisper observados no uso, com o que fazer em cada um.
+
+`LICOES-APRENDIDAS.md` trata do que vem depois do motor: como validar uma transcrição de conteúdo técnico, em que ordem procurar quando um nome está duvidoso, e **quais erros o corretor comete** — que se revelaram mais caros que os do Whisper, porque produzem texto plausível em vez de absurdo detectável. Escrito em 03/09/2026 sobre um acervo de 50 aulas e três rodadas de correção. É a base para desenhar a correção assistida. Foi escrito a partir da correção de 47 aulas de uma vez, e é o que separa erro recorrente de acaso.
 
 Três deles invertem o sentido da frase sem quebrar a gramática, e são os que passam despercebidos: o prefixo "des" que some, "sofisticação" que vira "simplificação", e o "%" que gruda em ano.
 

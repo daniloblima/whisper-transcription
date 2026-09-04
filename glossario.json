@@ -611,6 +611,200 @@
       "de": "chumpeterianos",
       "para": "schumpeterianos",
       "exato": false
+    },
+    {
+      "de": "CDPlar",
+      "para": "Cedeplar",
+      "exato": false,
+      "nota": "Centro de Desenvolvimento e Planejamento Regional, UFMG"
+    },
+    {
+      "de": "Economic Complex Indicator",
+      "para": "Economic Complexity Index",
+      "exato": false,
+      "nota": "o ECI do Atlas; o Whisper troca o nome do indice"
+    },
+    {
+      "de": "Econome Complex",
+      "para": "Economic Complexity",
+      "exato": false
+    },
+    {
+      "de": "Olinhan",
+      "para": "Allyn Young",
+      "exato": false,
+      "nota": "mesma deformacao de Wallen Yang"
+    },
+    {
+      "de": "Alinhane",
+      "para": "Allyn Young",
+      "exato": false
+    },
+    {
+      "de": "Prebsch",
+      "para": "Prebisch",
+      "exato": false,
+      "nota": "Raul Prebisch, Cepal"
+    },
+    {
+      "de": "Nurx",
+      "para": "Nurkse",
+      "exato": false,
+      "nota": "Ragnar Nurkse"
+    },
+    {
+      "de": "Hansman",
+      "para": "Hausmann",
+      "exato": false
+    },
+    {
+      "de": "Politileno",
+      "para": "Polietileno",
+      "exato": false
+    },
+    {
+      "de": "percuração",
+      "para": "perfuração",
+      "exato": false
+    },
+    {
+      "de": "bombardeira",
+      "para": "Bombardier",
+      "exato": false,
+      "nota": "fabricante canadense de avioes; so vale em contexto industrial"
+    },
+    {
+      "de": "é o bico",
+      "para": "é ubíquo",
+      "exato": false,
+      "nota": "ubiquo sai como 'o bico'; visto em aula de economia"
+    },
+    {
+      "de": "ubiquos",
+      "para": "ubíquos",
+      "exato": false,
+      "nota": "so falta o acento"
+    },
+    {
+      "de": "ubiqua",
+      "para": "ubíqua",
+      "exato": false
+    },
+    {
+      "de": "Sésamo Seeds",
+      "para": "sesame seeds",
+      "exato": false,
+      "nota": "leitura de tela em ingles no Atlas; gergelim"
+    },
+    {
+      "de": "Eric Reinert",
+      "para": "Erik Reinert",
+      "exato": false,
+      "nota": "com k; a fonte alterna e a forma certa e Erik S. Reinert"
+    },
+    {
+      "de": "Antônio Serra",
+      "para": "Antonio Serra",
+      "exato": false,
+      "nota": "economista italiano de Cosenza, Breve trattato de 1613; nome italiano nao leva circunflexo"
+    },
+    {
+      "de": "ex-Gini",
+      "para": "XGini",
+      "exato": false,
+      "nota": "indice do Gini potencial de um pais dada a estrutura produtiva; ex- e a pronuncia do X"
+    },
+    {
+      "de": "X-GINE",
+      "para": "XGini",
+      "exato": false
+    },
+    {
+      "de": "Product GINE",
+      "para": "Product Gini",
+      "exato": false
+    },
+    {
+      "de": "Silvio Luz",
+      "para": "Silvio Luiz",
+      "exato": false,
+      "nota": "o narrador esportivo brasileiro"
+    },
+    {
+      "de": "Danny Hodrick",
+      "para": "Dani Rodrik",
+      "exato": false
+    },
+    {
+      "de": "Steingart",
+      "para": "Schteingart",
+      "exato": false,
+      "nota": "Daniel Schteingart, economista argentino; Schteingart, D. (2014)"
+    },
+    {
+      "de": "Candir",
+      "para": "Kandir",
+      "exato": false,
+      "nota": "Antonio Kandir, ministro do Planejamento de FHC; Lei Kandir"
+    },
+    {
+      "de": "ministro Levi",
+      "para": "ministro Levy",
+      "exato": false,
+      "nota": "Joaquim Levy, Fazenda em 2015. Regra estreita de proposito; ver tambem a entrada 'o Levi,'"
+    },
+    {
+      "de": "Lara Rezende",
+      "para": "Lara Resende",
+      "exato": false,
+      "nota": "André Lara Resende, com S; a proposta Larida e dele com Persio Arida"
+    },
+    {
+      "de": "IGPDI",
+      "para": "IGP-DI",
+      "exato": false,
+      "nota": "Indice Geral de Precos - Disponibilidade Interna, da FGV"
+    },
+    {
+      "de": "o Levi,",
+      "para": "o Levy,",
+      "exato": false,
+      "nota": "pega 'ministro, o Levi,' que a regra colada nao alcancava"
+    },
+    {
+      "de": "Berrine",
+      "para": "Berrini",
+      "exato": false,
+      "nota": "avenida em Sao Paulo"
+    },
+    {
+      "de": "Simonson",
+      "para": "Simonsen",
+      "exato": false,
+      "nota": "Roberto Simonsen, da controversia com Gudin"
+    },
+    {
+      "de": "Goudan",
+      "para": "Gudin",
+      "exato": false,
+      "nota": "Eugenio Gudin; a controversia Simonsen-Gudin dos anos 1940"
+    },
+    {
+      "de": "Bob Horton",
+      "para": "Bob Rowthorn",
+      "exato": false,
+      "nota": "Robert Rowthorn, Cambridge, desindustrializacao"
+    },
+    {
+      "de": "a IOSP",
+      "para": "a Iochpe",
+      "exato": false
+    },
+    {
+      "de": "Marco Polo",
+      "para": "Marcopolo",
+      "exato": false,
+      "nota": "a fabricante de carrocerias; nome junto"
     }
   ],
   "_fora_de_proposito": [

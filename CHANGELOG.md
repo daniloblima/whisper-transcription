@@ -1,8 +1,19 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 03/09/2026 — `LICOES-APRENDIDAS.md`, o processo de validação
+
+Documento novo, escrito depois de validar um acervo de 50 aulas em três rodadas de correção. Complementa o `PADROES-DE-ERRO.md`: aquele trata dos erros do motor, este trata do processo de validação e, sobretudo, **dos erros de quem corrige**.
+
+O achado central: das 351 divergências entre duas transcrições do mesmo áudio com modelos diferentes, nenhuma revelou sozinha um erro que valesse correção. O erro que importa é aquele em que os dois modelos concordam, e ele só se pega contra o mundo. A segunda passada serviu para outra coisa — auditar a correção anterior, o que revelou 19 cicatrizes e três casos de fala apagada.
+
+Os erros do corretor ganharam taxonomia própria, com cinco tipos e caso real para cada: corrigir construção falada como se fosse erro, apagar fala em nome da clareza, corrigir olhando o vizinho em vez do conjunto, inventar precisão que a fonte não tem, e aplicar correção pela metade.
+
+O `BACKLOG.md` recebeu 12 itens derivados, e o `README.md` passou a apontar para o documento.
+
+
 ## 01/09/2026 — primeiro lote grande: 47 aulas, e o que ele ensinou
 
-Correção de 47 transcrições do curso de Paulo Gala, 200 mil palavras, 673 correções aplicadas. É o primeiro volume grande o suficiente para separar padrão de acaso, e rendeu três coisas.
+Correção de 47 transcrições de um curso de economia, 200 mil palavras, 673 correções aplicadas. É o primeiro volume grande o suficiente para separar padrão de acaso, e rendeu três coisas.
 
 **O glossário saiu de 30 para 111 termos.** Entraram os nomes que o Whisper deforma sempre igual: Roderick para Rodrik, Barabase para Barabási, Caldor para Kaldor, Klugmann e Kuhlman para Krugman, Girdrie para Deirdre McCloskey, criometria para cliometria, urna de polia para urna de Pólya, e mais três dezenas. Todos são nome próprio, sigla ou termo técnico, que é o critério do arquivo.
 
@@ -10,7 +21,7 @@ Correção de 47 transcrições do curso de Paulo Gala, 200 mil palavras, 673 co
 
 **Um erro de método, que é o mais importante.** A substituição de expressões com mais de uma palavra comia o carimbo de tempo que ficava entre elas. Foram 34 carimbos perdidos em 16 arquivos, e ninguém teria notado lendo o texto, porque o texto ficava perfeito. Descoberto num diff contra o backup, feito só porque Danilo desconfiou de uma correção não relacionada. Ficou a regra: depois de correção em lote, contar o que deveria ser invariante e comparar com o backup.
 
-**Uma política nova, decidida por Danilo.** Quando o erro é do palestrante e não da máquina, a transcrição continua fiel e o arquivo ganha uma `NOTA DE VERIFICAÇÃO` no ponto, com o fato correto, mais um aviso no cabeçalho. Sete casos no curso do Gala.
+**Uma política nova, decidida por Danilo.** Quando o erro é do palestrante e não da máquina, a transcrição continua fiel e o arquivo ganha uma `NOTA DE VERIFICAÇÃO` no ponto, com o fato correto, mais um aviso no cabeçalho. Sete casos no curso conferido.
 
 
 > **PROPÓSITO**: Este arquivo registra TODOS os problemas, bugs, decisões técnicas e soluções encontradas durante o desenvolvimento. É consultado OBRIGATORIAMENTE após cada compactação de contexto para evitar perda de informação.
@@ -248,11 +259,11 @@ neste teste sem prestar.
 
 ### DESEMPATE — aula com duas vozes conhecidas
 
-O Danilo forneceu uma aula do portal Nutror com duas pessoas falando, 1h09min22s.
+O Danilo forneceu uma aula de um portal de cursos com duas pessoas falando, 1h09min22s.
 Obtida com o navegador Playwright em perfil persistente (`~/.playwright-profile`),
 que ele autenticou na janela. O player é Vimeo em domínio restrito, e o caminho que
 funcionou foi extrair o `src` do iframe pelo DOM (`player.vimeo.com/video/790038962`)
-e baixar só a trilha de áudio com `yt-dlp --referer https://app.nutror.com/`.
+e baixar só a trilha de áudio com `yt-dlp --referer <url da plataforma>`.
 
 Registro de método: capturar a URL do manifesto pelas requisições de rede não serviu,
 porque as URLs do Vimeo adaptativo são longas e chegavam truncadas no log. Ler o

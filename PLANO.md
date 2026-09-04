@@ -169,7 +169,7 @@ trabalho.
 qualquer forma o `ggml-medium.bin` continua em disco.
 
 **~~Uma única amostra não é evidência forte.~~** RESOLVIDO em 20 e 21/08/2026. O
-Danilo forneceu uma aula do Nutror com duas vozes conhecidas, 1h09min22s, e ela
+Danilo forneceu uma aula gravada com duas vozes conhecidas, 1h09min22s, e ela
 mudou a decisão: o TitaNet, que empatava no áudio de uma pessoa, perdeu na aula.
 Sem esse segundo áudio, a escolha teria sido no cara ou coroa.
 

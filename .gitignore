@@ -43,3 +43,6 @@ Fotos Azayaka/
 # Glossário local — termos ligados a pessoas e empresas com quem trabalhamos.
 # O glossario.json público fica só com termo genérico e de organização pública.
 glossario.local.json
+
+# Backups de glossario feitos antes de lote (ficam no Mac, nao no GitHub)
+*.bak-*
