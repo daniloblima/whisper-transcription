@@ -72,7 +72,13 @@ A rede de segurança que o `BACKLOG.md` descreve está escrita como se protegess
 
 **Critério de sucesso.** Refazer a correção de uma aula do acervo com o aplicador e obter, sem nenhuma leitura humana, um log que aponte as três edições de fala que em 01/09 levaram dois dias para aparecer.
 
-**Estado:** não iniciada.
+**Estado:** [x] CONCLUÍDA em 04/09/2026. `aplicar_correcoes.py` e `FORMATO-CORRECOES.md` na raiz, skill ligada ao aplicador.
+
+O critério foi cumprido por um caminho mais forte que o previsto: em vez de detectar a edição de fala depois de feita, o aplicador a recusa antes. A tentativa de trocar `S11D, ou SD11` por `S11D`, que é o caso real de 01/09, é rejeitada com a corrida inteira, porque a troca encurta a fala e não traz declaração de remoção.
+
+Dois defeitos apareceram no primeiro teste e foram corrigidos antes de qualquer uso. O primeiro é irônico: ao sobrar separador numa substituição que encurta, o módulo recolocava espaço em branco no fim e produzia exatamente a cicatriz que existe para impedir. Passou a descartar separador em branco e a preservar só o que carrega carimbo ou marcador. O segundo é que a trava de remoção só olhava `para` vazio, e o caso real de 01/09 não era vazio, era encurtamento — passou a recusar toda troca que reduza a contagem de palavras sem declaração.
+
+Medido no acervo de 50 aulas, em cópia: 183 trocas em 41 arquivos em 0,16 s, dez delas atravessando carimbo de tempo, com os 29.795 carimbos e os 51 marcadores de falante intactos e nenhuma cicatriz introduzida. O acervo tem 14.662 pontos em que duas palavras vizinhas estão separadas por um carimbo, o que mostra que o padrão 7 não era caso raro.
 
 ---
 

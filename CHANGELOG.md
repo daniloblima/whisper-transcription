@@ -1,5 +1,27 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 04/09/2026 — Fase 1: o aplicador único de correções
+
+### OBJETIVO
+Impedir que a correção de transcrição destrua o material que corrige. Os cinco erros do corretor catalogados em `LICOES-APRENDIDAS.md` foram cometidos por sessão de Claude editando o `.md` direto, sem backup, sem log e sem verificação.
+
+### SOLUÇÃO
+`aplicar_correcoes.py` na raiz, com o formato em `FORMATO-CORRECOES.md`. Toda troca se declara num JSON com `motivo` e `origem`, e cinco travas rodam antes de qualquer escrita: contagem de ocorrências declarada, recusa de troca que apague fala, preservação dos separadores, contagem de invariantes e backup com log estruturado. A skill `/arrumar-transcricao` foi ligada a ele e deixou de aplicar correção à mão.
+
+### DOIS DEFEITOS ACHADOS NO PRIMEIRO TESTE
+O primeiro é irônico e teria passado despercebido. A regra 7 do `PADROES-DE-ERRO.md` manda recolocar no fim os separadores que sobram numa substituição que encurta. Implementada ao pé da letra, ela devolve espaço em branco ao fim da expressão e produz exatamente a cicatriz que o módulo existe para impedir: `S11D  , lá no Pará`. Corrigido para preservar só o separador que carrega carimbo ou marcador, e descartar o que é espaço.
+
+O segundo é que a trava contra apagar fala só olhava `para` vazio. O caso real de 01/09 não era vazio: `S11D, ou SD11` virou `S11D`, três palavras em uma. Passou a recusar toda troca que reduza a contagem de palavras sem `"tipo": "remocao"` e `confirmado_por`.
+
+### RESULTADOS
+Medido em cópia do acervo de 50 aulas: 183 trocas em 41 arquivos em 0,16 s, dez atravessando carimbo de tempo, com 29.795 carimbos e 51 marcadores intactos e nenhuma cicatriz. O acervo tem 14.662 pontos em que duas palavras vizinhas estão separadas por um carimbo, o que mede o tamanho real do risco do padrão 7.
+
+As três recusas testadas, todas abortando a corrida sem escrever: troca que encurta fala, regra larga demais (`Levi` casando duas vezes com uma declarada) e invariante alterado.
+
+### LIÇÃO
+Regra escrita em documento não é implementação testada. A regra 7 estava certa como diagnóstico e errada como receita, e só o teste com caso real mostrou a diferença.
+
+
 ## 04/09/2026 — plano da correção assistida, e o versionamento que não existia
 
 Sessão de decisão, sem código. O ponto de partida foi juntar a skill `/arrumar-transcricao` ao motor, e a leitura do `LICOES-APRENDIDAS.md` reordenou a prioridade inteira.

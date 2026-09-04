@@ -38,6 +38,16 @@ Arquivo de transcrição + contexto do usuário → coleta → análise → dúv
 
 O usuário fornece o arquivo, o tema, as referências e responde as dúvidas. Claude faz a análise, corrige e gera o arquivo final.
 
+## A correção não se aplica à mão
+
+Desde 04/09/2026, nenhuma correção se aplica editando o arquivo. Toda troca se declara num JSON e passa pelo `aplicar_correcoes.py`, na raiz do projeto. O formato está em `FORMATO-CORRECOES.md`.
+
+O motivo é medido, e está na parte 4 do `LICOES-APRENDIDAS.md`. Os cinco erros mais caros do acervo de 50 aulas foram cometidos por sessão de Claude editando o `.md` direto: três apagaram fala do palestrante, um inventou um país que ninguém disse e um trocou um nome por contaminação do vizinho. Nenhum deixou rastro, e a auditoria só foi possível por acidente.
+
+O aplicador recusa a corrida inteira, sem escrever nada, quando a contagem de ocorrências não bate com a declarada, quando a troca apaga fala sem declaração explícita, ou quando um carimbo de tempo ou marcador de falante desaparece. Ele também preserva o carimbo que fica no meio de uma expressão de várias palavras, que é o padrão 7 e comeu 34 carimbos em 16 arquivos.
+
+Na prática, o que muda no seu trabalho: em vez de aplicar a correção, você a escreve na declaração com `motivo` e `origem`, roda com `--dry-run` para conferir as contagens, e só então aplica. O backup e o log saem de graça.
+
 ## Etapas
 
 ### 1. Coleta de contexto
@@ -75,7 +85,7 @@ Ler o arquivo completo e classificar erros em 3 categorias:
 - Nunca inventar correção quando em dúvida
 
 ### 4. Correção e diarização
-- Aplicar todas as correções (óbvias + contexto + respostas do usuário)
+- Escrever todas as correções (óbvias + contexto + respostas do usuário) numa declaração JSON e aplicá-la com `aplicar_correcoes.py`. Nunca editar o arquivo direto — ver a seção acima
 - Se diarização pedida: reclassificar falantes com base no contexto
   - Critérios: quem pergunta vs quem responde, pronomes usados, conteúdo da fala, alternância natural de diálogo
   - Substituir labels genéricos (SPEAKER_0, SPEAKER_1) pelos nomes reais
@@ -91,7 +101,7 @@ Ler o arquivo completo e classificar erros em 3 categorias:
 ### 6. Verificação
 - Grep pelos termos errados mais recorrentes para confirmar que foram todos corrigidos
 - Se diarização ativa: grep por "SPEAKER_" para confirmar que nenhum label genérico restou
-- Contar timestamps no original vs corrigido para confirmar que nenhum trecho foi perdido
+- A contagem de carimbos e marcadores já é feita pelo aplicador, que aborta se algum sumir. O relatório de cada corrida fica em `_correcoes/<data-hora>/`
 
 ### 7. Alimentar o glossário
 
