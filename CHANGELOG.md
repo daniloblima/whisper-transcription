@@ -1,5 +1,16 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 04/09/2026 — plano da correção assistida, e o versionamento que não existia
+
+Sessão de decisão, sem código. O ponto de partida foi juntar a skill `/arrumar-transcricao` ao motor, e a leitura do `LICOES-APRENDIDAS.md` reordenou a prioridade inteira.
+
+**O achado que reordenou.** Os cinco erros do corretor catalogados em 03/09 foram cometidos em sessão de Claude editando o `.md` direto, não por script. A rede de segurança do backlog estava escrita como se protegesse a correção em lote por código, que é justamente a parte que erra menos. Por isso a primeira fase do plano é um aplicador único de correções, que vale para script e para sessão sem exceção, com backup, log estruturado, contagem de invariantes e tratamento dos separadores.
+
+**Seis decisões de desenho**, detalhadas em `PLANO-2026-09-04-correcao-assistida.md`: evoluir no lugar em vez de abrir aplicação nova; contexto do áudio por campo de texto livre, curto e opcional, o que faz o esforço ser declarado pelo dono do material e dissolve a distinção entre modo acervo e modo avulso; tema como unidade de acúmulo, não pasta; dicionários num nível só, com composição em vez de hierarquia; segunda passada com outro modelo rebaixada, porque o log da fase 1 faz a auditoria melhor e de graça; e anonimização do material de origem, já aplicada no commit `40ebe01`.
+
+**Versionamento, que o projeto nunca teve.** Sem tag, sem número, sem marco. Adotado SemVer com tag git, com regra explícita de quando cada número sobe, mais carimbo de procedência no cabeçalho de todo arquivo produzido — que é a parte que resolve dor real, porque o resultado passa a depender de modelo, limiar, glossário e dicionários aplicados. O estado com o motor medido em agosto ficou marcado retroativamente como `v1.0.0`. O plano fecha em `v2.0.0`, porque a fase 4 muda o cabeçalho dos arquivos produzidos.
+
+
 ## 03/09/2026 — `LICOES-APRENDIDAS.md`, o processo de validação
 
 Documento novo, escrito depois de validar um acervo de 50 aulas em três rodadas de correção. Complementa o `PADROES-DE-ERRO.md`: aquele trata dos erros do motor, este trata do processo de validação e, sobretudo, **dos erros de quem corrige**.
