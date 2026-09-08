@@ -34,6 +34,7 @@ Uso:
 Formato do JSON em FORMATO-CORRECOES.md, ao lado deste arquivo.
 """
 import argparse, json, re, sys, unicodedata
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
@@ -41,6 +42,12 @@ from pathlib import Path
 
 RE_CARIMBO = r"`\[\d+:\d\d:\d\d\]`"
 RE_FALANTE = r"\*\*[A-Z][A-Z_0-9]*\*\*"
+# Export de ferramenta de notas de reunião não traz carimbo nem marcador em
+# negrito: o falante vem como "Nome:" abrindo a linha. Sem reconhecer isto, a
+# contagem de invariantes dava zero antes e zero depois e informava que nada se
+# perdera, o que é pior que não ter trava nenhuma. Achado em 08/09/2026, num
+# lote de 24 conversas.
+RE_FALANTE_LINHA = r"(?m)^[A-ZÁÉÍÓÚÂÊÔÃÕÇ][^\n:]{0,40}:(?=\s)"
 # O que pode aparecer entre duas palavras de uma mesma expressão falada:
 # espaço, quebra de linha, marcador de falante e carimbo de tempo.
 SEP = rf"(\s+(?:{RE_FALANTE}\s+)?(?:{RE_CARIMBO}\s*)?)"
@@ -62,8 +69,15 @@ def contar_invariantes(texto):
     return {
         "carimbos": len(re.findall(RE_CARIMBO, texto)),
         "falantes": len(re.findall(RE_FALANTE, texto)),
+        "falantes_linha": len(re.findall(RE_FALANTE_LINHA, texto)),
         "linhas": texto.count("\n"),
+        "palavras": len(re.findall(r"\S+", texto)),
     }
+
+
+def tem_estrutura(inv):
+    """Se o arquivo não traz carimbo nem marcador, não há o que proteger por aí."""
+    return any(inv[c] for c in ("carimbos", "falantes", "falantes_linha"))
 
 
 def carimbo_antes(texto, pos):
@@ -137,6 +151,20 @@ def aplicar_uma(texto, c, arquivo):
     padrao = construir_padrao(c["de"], c.get("exato", True))
     eventos = []
 
+    def contexto(pos, fim, raio=55):
+        """O texto em volta da troca.
+
+        Existe porque a contagem declarada protege contra pegar demais ou de
+        menos, e não mostra o que vai ser trocado. Num lote de 08/09/2026, trinta
+        ocorrências de um nome pediam correção e a trigésima era a citação de um
+        autor de verdade, com a mesma grafia. Quem salvou foi a leitura das trinta
+        linhas: dois minutos, e a diferença entre correção e estrago.
+        """
+        ini = max(0, pos - raio)
+        depois = min(len(texto), fim + raio)
+        return (("…" if ini else "") + re.sub(r"\s+", " ", texto[ini:depois]).strip()
+                + ("…" if depois < len(texto) else ""))
+
     def troca(m):
         seps = [g for g in m.groups() if g is not None]
         novo = montar_substituicao(seps, c["para"])
@@ -144,6 +172,7 @@ def aplicar_uma(texto, c, arquivo):
             "arquivo": arquivo,
             "de": m.group(0),
             "para": novo,
+            "contexto": contexto(m.start(), m.end()),
             "linha": linha_de(texto, m.start()),
             "carimbo": carimbo_antes(texto, m.start()),
             "atravessa_carimbo": any(re.search(RE_CARIMBO, s) for s in seps),
@@ -236,6 +265,8 @@ def escrever_relatorio(destino, decl, eventos, invariantes, avisos, aplicado):
         marca = " (atravessa carimbo)" if e["atravessa_carimbo"] else ""
         md.append(f"\n**{e['arquivo']}** `[{e['carimbo']}]` linha {e['linha']}{marca}\n\n")
         md.append(f"- antes: `{e['de']}`\n- depois: `{e['para']}`\n")
+        if e.get("contexto"):
+            md.append(f"- em volta: {e['contexto']}\n")
         md.append(f"- motivo: {e['motivo']} _(origem: {e['origem']})_\n")
     (destino / "correcoes.md").write_text("".join(md))
 
@@ -281,16 +312,34 @@ def rodar(caminho_decl, dry_run=False, logs=None):
         eventos += evs_desta
 
     # Passo 2: invariantes. Carimbo ou marcador que suma aborta tudo.
-    invariantes = {}
+    #
+    # A contagem de palavras é o invariante que vale em qualquer formato, e
+    # existe porque os outros três dependem de estrutura que nem todo arquivo
+    # tem. O esperado sai da própria declaração: cada troca sabe quantas
+    # palavras tira e põe.
+    invariantes, sem_estrutura = {}, []
+    delta_por_arquivo = defaultdict(int)
+    for e in eventos:
+        delta_por_arquivo[e["arquivo"]] += len(e["para"].split()) - len(e["de"].split())
+
     for a in alvos:
         antes, depois = contar_invariantes(originais[a]), contar_invariantes(novos[a])
         invariantes[a.name] = {"antes": antes, "depois": depois}
-        for chave in ("carimbos", "falantes"):
+        for chave in ("carimbos", "falantes", "falantes_linha"):
             if antes[chave] != depois[chave]:
                 raise Recusa(
                     f"{a.name}: {chave} passou de {antes[chave]} para {depois[chave]}. "
                     f"Correção não pode mexer nisso. Nada foi escrito."
                 )
+        esperado = antes["palavras"] + delta_por_arquivo[a.name]
+        if depois["palavras"] != esperado:
+            raise Recusa(
+                f"{a.name}: o texto ficou com {depois['palavras']} palavras e as trocas "
+                f"declaradas previam {esperado}. Diferença de "
+                f"{depois['palavras'] - esperado}. Nada foi escrito."
+            )
+        if not tem_estrutura(antes):
+            sem_estrutura.append(a.name)
 
     # Passo 3: cicatriz introduzida pela própria aplicação.
     for a in alvos:
@@ -300,7 +349,14 @@ def rodar(caminho_decl, dry_run=False, logs=None):
 
     tocados = [a for a in alvos if novos[a] != originais[a]]
     log(f"\n{len(eventos)} trocas em {len(tocados)} arquivo(s). "
-        f"Invariantes conferidos: nenhum carimbo ou marcador perdido.")
+        f"Contagem de palavras confere com o que as trocas previam.")
+    if sem_estrutura:
+        log(f"  ATENÇÃO: {len(sem_estrutura)} arquivo(s) sem carimbo de tempo nem marcador "
+            f"de falante. A proteção estrutural não se aplica a eles, e a única conferência "
+            f"foi a de palavras: {', '.join(sem_estrutura[:3])}"
+            + (f" e mais {len(sem_estrutura)-3}" if len(sem_estrutura) > 3 else ""))
+    else:
+        log(f"  Nenhum carimbo ou marcador perdido.")
     for av in avisos:
         log(f"  aviso: {av}")
 

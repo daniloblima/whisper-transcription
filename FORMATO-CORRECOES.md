@@ -60,7 +60,11 @@ Toda correção de transcrição passa pelo `aplicar_correcoes.py`, que lê um J
 
 **Separadores preservados.** Quando a expressão tem mais de uma palavra, o que estiver entre elas — quebra de linha, carimbo de tempo, marcador de falante — é capturado e recolocado. No acervo do curso há 14.662 pontos em que duas palavras vizinhas estão separadas por um carimbo, então isso não é caso raro. Separador que sobra só permanece se carregar carimbo ou marcador; se for espaço em branco, é descartado, senão vira a cicatriz que o módulo existe para impedir.
 
-**Invariantes conferidos.** Carimbos de tempo e marcadores de falante são contados antes e depois. Se algum sumir, a corrida aborta e o arquivo não é tocado. Foi assim que se perderam 34 carimbos em 16 arquivos sem ninguém notar, porque o texto continuava perfeito.
+**Invariantes conferidos.** Carimbos de tempo e marcadores de falante são contados antes e depois — tanto o `**FALANTE**` das transcrições do projeto quanto o `Nome:` abrindo linha, que é como exportam as ferramentas de notas de reunião. Se algum sumir, a corrida aborta e o arquivo não é tocado. Foi assim que se perderam 34 carimbos em 16 arquivos sem ninguém notar, porque o texto continuava perfeito.
+
+Sobre isso corre a contagem de palavras, que é o invariante que vale em qualquer formato: cada troca sabe quantas palavras tira e põe, então o total depois tem que bater com o previsto. Ela existe porque as outras três dependem de estrutura que nem todo arquivo tem, e num lote de 08/09/2026 a trava rodou sobre 23 arquivos sem carimbo nem marcador, contou zero e zero, e informou que nada se perdera. Quando não houver estrutura nenhuma, o aplicador diz isso em voz alta em vez de dar conforto.
+
+**Contexto de cada troca no relatório.** O log mostra o texto em volta de cada ocorrência, porque a contagem declarada protege contra pegar demais ou de menos e não mostra o que vai ser trocado. Rodar com `--dry-run` e ler as ocorrências é o passo que separa correção de estrago numa troca de nome próprio.
 
 **Backup e log.** Antes de escrever, o original vai para `_correcoes/<data-hora>/<nome>.bak.md`. Depois, o mesmo diretório recebe `log.json` e `correcoes.md`, com regra, arquivo, linha, carimbo mais próximo, texto antes e depois, motivo e origem de cada troca.
 

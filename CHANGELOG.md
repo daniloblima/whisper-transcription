@@ -1,5 +1,24 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 08/09/2026 — a trava que não protegia, e dizia que protegia
+
+### PROBLEMA
+Uma sessão paralela usou o `aplicar_correcoes.py` sobre 24 conversas por chamada de vídeo, exportadas de uma ferramenta de notas de reunião. Aquele formato não tem carimbo de tempo nem marcador `**FALANTE**`: o falante vem como `Nome:` abrindo a linha. A contagem de invariantes achou zero antes e zero depois em 23 arquivos, e imprimiu "nenhum carimbo ou marcador perdido".
+
+Nas palavras do registro daquela sessão, que estão certas: trava que não protege e diz que protegeu é pior que trava ausente. O relato da Fase 1, de que o aplicador impede apagar fala, valia no formato das aulas e não em qualquer formato — o que não tinha sido testado.
+
+### SOLUÇÃO
+Três partes. O `Nome:` em início de linha entrou como marcador reconhecido. A contagem de palavras entrou como invariante que vale em qualquer formato: cada troca sabe quantas palavras tira e põe, e o total depois tem que bater com o previsto. E a mensagem final deixou de afirmar o que não conferiu — sem estrutura para proteger, o aplicador diz isso em voz alta.
+
+Entrou junto o contexto de cada troca no relatório, com o texto em volta. É o segundo item que aquele lote pediu: a contagem declarada protege contra pegar demais ou de menos e não mostra o que vai ser trocado. Trinta ocorrências de um nome pediam correção e a trigésima era a citação de um autor de verdade, com a mesma grafia.
+
+### RESULTADOS
+No formato `Nome:`, o aplicador passa a enxergar seis marcadores onde antes via zero. Uma troca que apaga os dois pontos derruba a contagem de 6 para 3 e aborta a corrida. Num texto corrido, sem estrutura nenhuma, a corrida roda e avisa que a única conferência foi a de palavras.
+
+### LIÇÃO
+Trava se testa contra os formatos que vai encontrar, não contra o formato em que nasceu. E a mensagem de sucesso precisa dizer o que foi conferido, não o que se esperava conferir: o texto "nenhum carimbo perdido" era literalmente verdadeiro e completamente enganoso.
+
+
 ## 08/09/2026 — Fase 3: dicionários por tema
 
 ### OBJETIVO
