@@ -100,3 +100,12 @@ Ver `LICOES-APRENDIDAS.md` para o caso concreto de cada um. A parte 11 daquele d
 ### Captura
 
 - [ ] **Distinguir limite temporário de detecção de automação** na mesma mensagem de erro do provedor. As respostas são opostas: esperar um dia num caso, trocar para o navegador do sistema no outro.
+
+## Vindos de um lote de conversa entre duas pessoas (08/09/2026)
+
+Primeiro material que não é aula gravada: 24 conversas por chamada de vídeo, exportadas de uma ferramenta de notas de reunião. Formato sem carimbo de tempo, com o falante marcado como `Nome:` em início de linha. Ver os padrões 10 e 11 em `PADROES-DE-ERRO.md`.
+
+- [x] **Reconhecer marcador de falante em início de linha, no formato `Nome:`.** FEITO em 08/09/2026, `v1.4.0`, junto com a contagem de palavras como invariante que vale em qualquer formato. A trava de invariantes do `aplicar_correcoes.py` conta carimbo de tempo e `**FALANTE**`, e este formato não tem nenhum dos dois. Nos 23 arquivos ela contou 0 e 0 antes e depois: rodou, informou "nenhum carimbo ou marcador perdido" e não protegeu nada. Trava que não protege e diz que protegeu é pior que trava ausente.
+- [x] **Listar ocorrências com contexto antes de aplicar troca de nome.** FEITO em 08/09/2026, `v1.4.0`: o relatório de cada corrida traz o texto em volta de cada ocorrência, e `--dry-run` o gera sem escrever nada. A declaração de correção já pede a contagem, o que protege contra pegar demais ou de menos, mas não mostra o que vai ser trocado. Foi a leitura manual das 30 linhas que salvou uma citação legítima.
+- [ ] **Diarização como operação de primeira classe.** Trocar o marcador genérico do export pelo nome de cada falante é manual hoje, e as três conferências que a fecham também: cada marcador virou o seu na mesma quantidade, não sobrou marcador antigo, o texto fora dos marcadores ficou idêntico. Foram 2.855 marcadores em 24 arquivos.
+- [ ] **Sinalizar alucinação em outro idioma.** Em trecho de silêncio, conexão ruim ou fala sobreposta, o motor produz falas curtas em russo, espanhol, italiano e holandês no meio do português. É ruído estrutural, não erro de palavra, e não pode ser apagado automaticamente, porque apagar fala é o que o aplicador recusa com razão. Cabe sinalizar e deixar a decisão com o dono do material.

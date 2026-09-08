@@ -4,13 +4,15 @@ Documento vivo. Cada entrada é um padrão que apareceu em volume suficiente par
 
 Criado em 01/09/2026, a partir da correção de 47 aulas de um curso de economia (200 mil palavras, 673 correções). É a primeira base grande o suficiente para separar padrão de acaso.
 
+Ampliado em 08/09/2026 com um segundo formato, um lote de 24 conversas de duas pessoas por chamada de vídeo. Os erros são outros: quase não há termo técnico e o que domina é nome próprio. Daí os padrões 10 e 11.
+
 ---
 
 ## TL;DR
 
-Nove padrões. Os três primeiros invertem o sentido da frase e são os únicos perigosos de verdade. O resto é grafia, e o glossário resolve.
+Onze padrões. Os três primeiros invertem o sentido da frase e são os únicos perigosos de verdade. O resto é grafia, e o glossário resolve.
 
-O padrão 7 não é do Whisper, é de método, e foi o erro mais caro da sessão.
+Os padrões 7 e 11 não são do Whisper, são de método. O 7 foi o erro mais caro da sessão de 01/09 e o 11 quase custou uma citação legítima em 08/09.
 
 ---
 
@@ -78,9 +80,28 @@ O texto trazia "Robert Barabási" e foi corrigido para "Albert-László Barabás
 
 ---
 
+## 10. Ele erra o nome do interlocutor no vocativo, e cada erro sai diferente
+
+Em conversa de duas pessoas, o nome de quem ouve costuma aparecer no fim da frase, que é onde a voz baixa. Medido num acervo de 24 conversas por chamada de vídeo: o nome de um dos dois saiu em cinco grafias, a mais frequente delas 30 vezes, e o de uma terceira pessoa citada saiu em três.
+
+A assinatura importa, porque é o oposto do padrão 4. Nome de bibliografia sai deformado sempre do mesmo jeito, já que o motor erra de forma estável. Nome de interlocutor sai de muitas formas, porque cada ocorrência é uma aposta nova sobre um trecho de áudio ruim. Quando um nome aparece deformado de um jeito só, e sempre igual, é mais provável que a pessoa tenha falado assim mesmo.
+
+**Como pegar:** listar as capitalizadas raras que se parecem com uma capitalizada frequente. Elas se agrupam em torno do nome certo.
+
+## 11. A troca em bloco de nome próprio destrói o nome legítimo de mesma grafia
+
+Não é erro do Whisper, é de método, e é o mais barato de cometer.
+
+Naquele mesmo acervo, a grafia errada mais frequente do nome do interlocutor era também o primeiro nome de um autor de fato citado numa das conversas. Trinta ocorrências pediam troca e a trigésima era a citação real. A substituição em bloco, que parecia óbvia, teria apagado a referência sem deixar rastro.
+
+Duas variantes do mesmo risco apareceram no mesmo lote. Nome no plural aciona os varredores e quase nunca é erro. E há o caso em que o nome certo é a palavra errada: um nome próprio de duas sílabas transcrito no lugar de um substantivo comum quase homófono, o que só o contexto denuncia.
+
+**Como pegar:** antes de declarar qualquer troca de nome, listar todas as ocorrências com o contexto ao redor e ler uma a uma. Trinta linhas se leem em dois minutos, e é a diferença entre correção e estrago.
+
 ## O que virou regra operacional
 
 1. **Três camadas, nesta ordem.** Glossário determinístico, leitura de contexto, e registro do que sobrou para o humano decidir.
 2. **A terceira camada é entregável.** Lista com aula e instante de cada dúvida, para ouvir o trecho. Sem isso o resto vira caixa-preta.
 3. **Backup antes, diff depois.** O diff palavra a palavra contra o backup é o único jeito de auditar correção em lote.
 4. **Contar invariantes.** Ver a regra 7.
+5. **Nome próprio não se troca em bloco.** Listar ocorrência a ocorrência com o contexto antes de declarar a regra. Ver o padrão 11.
