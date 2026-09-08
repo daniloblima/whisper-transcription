@@ -1,0 +1,23 @@
+{
+  "_leia_me": [
+    "Glossario de um tema. Mesmo formato do glossario.json da raiz, e somado a ele.",
+    "",
+    "A diferenca entre os dois e o escopo, e ela decide onde cada termo mora:",
+    "  raiz  = o acerto vale em qualquer audio sobre qualquer assunto",
+    "  tema  = o acerto so vale dentro deste assunto",
+    "",
+    "O caso que criou esta separacao: 'Levi' para 'Levy' vale numa aula de economia",
+    "brasileira, onde e o Joaquim Levy da Fazenda, e estraga qualquer outro audio,",
+    "onde Levi e nome de pessoa comum. Na raiz nao podia entrar; aqui pode.",
+    "",
+    "Campos: de, para, exato (true exige maiusculas identicas) e nota."
+  ],
+  "termos": [
+    {
+      "de": "Iken Green",
+      "para": "Eichengreen",
+      "exato": false,
+      "nota": "Barry Eichengreen; o motor quebra o sobrenome em duas palavras"
+    }
+  ]
+}

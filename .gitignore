@@ -46,3 +46,8 @@ glossario.local.json
 
 # Backups de glossario feitos antes de lote (ficam no Mac, nao no GitHub)
 *.bak-*
+
+# Dicionarios por tema — sao do usuario e este repositorio e publico.
+# So o exemplo e versionado, e serve de formato para quem instalar.
+dicionarios/*
+!dicionarios/exemplo/

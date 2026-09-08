@@ -23,6 +23,10 @@ O que sobra para esta skill é tudo que exige contexto, e é a maior parte do vo
 - Sigla em minúscula que colide com palavra comum. Caso real: o Whisper escreveu "a anel regula o setor elétrico", que é ANEEL, e o glossário não pode tocar porque destruiria "anel de vedação".
 - Diarização, junção indevida de falas e identificação de quem fala.
 
+Desde 08/09/2026 há uma terceira camada entre as duas: os dicionários por tema, em `dicionarios/<tema>/`. Eles guardam o que só vale dentro de um assunto — `Marco Polo` para `Marcopolo` numa conversa sobre carrocerias, que estragaria qualquer áudio onde ele é o viajante. Rodar `python3 dicionarios.py --sugerir "<o contexto que o usuário deu>"` propõe quais carregar; a transcrição os aplica com `--tema <nome>`, e mais de um pode ser usado ao mesmo tempo.
+
+Ao propor termo novo no fim da correção, dizer também onde ele entra: no glossário geral, se o acerto valeria em qualquer áudio sobre qualquer assunto, ou num dicionário de tema, se depende do assunto. O teste é o mesmo de sempre, agora com três destinos em vez de dois.
+
 Antes de começar, vale abrir o `glossario.json` para saber o que já foi tratado e não perder tempo procurando erro que o script já corrigiu. Se existir um arquivo `*_termos-corrigidos.md` ao lado da transcrição, ele lista exatamente o que foi trocado nela.
 
 ## Subcomandos

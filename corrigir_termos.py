@@ -26,7 +26,7 @@ GLOSSARIO_PADRAO = PASTA / "glossario.json"
 GLOSSARIO_LOCAL = PASTA / "glossario.local.json"
 
 
-def carregar_glossario(caminho=None):
+def carregar_glossario(caminho=None, temas=None):
     """
     Lê o glossário público e, se existir, o local, devolvendo a lista somada.
 
@@ -36,6 +36,9 @@ def carregar_glossario(caminho=None):
     existe, e o script funciona igual.
 
     Quando `caminho` é informado explicitamente, só ele é lido.
+
+    `temas` soma os glossários de `dicionarios/<tema>/glossario.json`. É o que
+    permite ter `Levi → Levy` valendo em economia sem estragar outro áudio.
     """
     if caminho:
         return _ler_arquivo(Path(caminho))
@@ -48,7 +51,28 @@ def carregar_glossario(caminho=None):
             termos = termos + locais
             print(f"   🔒 Glossário local: +{len(locais)} termos (fora do repositório)")
 
+    for caminho_tema, nome in _glossarios_de_temas(temas):
+        do_tema = _ler_arquivo(caminho_tema, rotulo=f"tema {nome}")
+        if do_tema:
+            termos = termos + do_tema
+            print(f"   📚 Dicionário '{nome}': +{len(do_tema)} termos")
+
     return termos
+
+
+def _glossarios_de_temas(temas):
+    """Resolve os temas pedidos. Tema que não existe avisa e não interrompe."""
+    if not temas:
+        return []
+    try:
+        from dicionarios import glossarios_de
+    except ImportError:
+        print("   ⚠️  dicionarios.py indisponível; temas ignorados.")
+        return []
+    caminhos, faltando = glossarios_de(temas)
+    for f in faltando:
+        print(f"   ⚠️  Tema '{f}' não encontrado em dicionarios/. Ignorado.")
+    return [(c, c.parent.name) for c in caminhos]
 
 
 def _ler_arquivo(caminho, rotulo="público"):
@@ -149,7 +173,7 @@ def escrever_log(destino, arquivo_alvo, trocas, termos_carregados):
         f.write("/arrumar-transcricao sobre este arquivo.\n")
 
 
-def corrigir_arquivo(caminho, caminho_glossario=None, gerar_log=True):
+def corrigir_arquivo(caminho, caminho_glossario=None, gerar_log=True, temas=None):
     """
     Corrige um arquivo de transcrição no lugar.
 
@@ -160,7 +184,7 @@ def corrigir_arquivo(caminho, caminho_glossario=None, gerar_log=True):
         print(f"   ❌ Arquivo não encontrado: {caminho}")
         return []
 
-    termos = carregar_glossario(caminho_glossario)
+    termos = carregar_glossario(caminho_glossario, temas)
     if not termos:
         return []
 
@@ -186,13 +210,17 @@ def corrigir_arquivo(caminho, caminho_glossario=None, gerar_log=True):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(__doc__)
-        print("Erro: informe o arquivo de transcrição.\n")
-        sys.exit(1)
+    import argparse
+    p = argparse.ArgumentParser(description="Aplica o glossário sobre uma transcrição.")
+    p.add_argument("arquivo", help="transcrição a corrigir")
+    p.add_argument("glossario", nargs="?", default=None,
+                   help="glossário alternativo (padrão: glossario.json do projeto)")
+    p.add_argument("--tema", action="append", dest="temas", default=None,
+                   help="dicionário por tema a somar; pode repetir")
+    args = p.parse_args()
 
-    alvo = Path(sys.argv[1])
-    glossario = sys.argv[2] if len(sys.argv) > 2 else None
+    alvo = Path(args.arquivo)
+    glossario = args.glossario
 
     print("\n" + "=" * 80)
     print("CORREÇÃO DE TERMOS")
@@ -201,7 +229,7 @@ def main():
     print(f"Glossário: {glossario or GLOSSARIO_PADRAO}")
     print("=" * 80 + "\n")
 
-    trocas = corrigir_arquivo(alvo, glossario)
+    trocas = corrigir_arquivo(alvo, glossario, temas=args.temas)
 
     print("\n" + "=" * 80)
     print(f"✅ CONCLUÍDO — {sum(n for _, _, n in trocas)} substituições")

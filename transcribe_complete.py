@@ -722,6 +722,8 @@ def main():
     parser.add_argument('--language', default='auto', help='Idioma para transcrição (padrão: auto — detecção automática)')
     parser.add_argument('--output-dir', type=str, default=None,
                        help='Diretório de saída (padrão: ~/Downloads/Transcricoes/nome_video/)')
+    parser.add_argument('--tema', action='append', dest='temas', default=None,
+                       help='Dicionário por tema a somar ao glossário; pode repetir')
     parser.add_argument('--sem-glossario', action='store_true',
                        help='Pula a correção automática de termos (passo 5)')
     parser.add_argument('--glossario', type=str, default=None,
@@ -832,7 +834,7 @@ def main():
         print("   ⏭️  Pulado: corrigir_termos.py indisponível")
     else:
         try:
-            trocas = corrigir_arquivo(output_file, args.glossario)
+            trocas = corrigir_arquivo(output_file, args.glossario, temas=args.temas)
         except Exception as e:
             # Falha suave: a transcrição já está salva e não pode ser perdida
             # por causa da etapa de correção.

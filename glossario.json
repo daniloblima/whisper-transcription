@@ -520,12 +520,6 @@
       "nota": "mercantilista ingles; cuidado se o audio for de politica americana"
     },
     {
-      "de": "urna de polia",
-      "para": "urna de Pólya",
-      "exato": false,
-      "nota": "George Polya"
-    },
-    {
       "de": "processo de Yules",
       "para": "processo de Yule",
       "exato": false
@@ -668,18 +662,6 @@
       "exato": false
     },
     {
-      "de": "bombardeira",
-      "para": "Bombardier",
-      "exato": false,
-      "nota": "fabricante canadense de avioes; so vale em contexto industrial"
-    },
-    {
-      "de": "é o bico",
-      "para": "é ubíquo",
-      "exato": false,
-      "nota": "ubiquo sai como 'o bico'; visto em aula de economia"
-    },
-    {
       "de": "ubiquos",
       "para": "ubíquos",
       "exato": false,
@@ -689,24 +671,6 @@
       "de": "ubiqua",
       "para": "ubíqua",
       "exato": false
-    },
-    {
-      "de": "Sésamo Seeds",
-      "para": "sesame seeds",
-      "exato": false,
-      "nota": "leitura de tela em ingles no Atlas; gergelim"
-    },
-    {
-      "de": "Eric Reinert",
-      "para": "Erik Reinert",
-      "exato": false,
-      "nota": "com k; a fonte alterna e a forma certa e Erik S. Reinert"
-    },
-    {
-      "de": "Antônio Serra",
-      "para": "Antonio Serra",
-      "exato": false,
-      "nota": "economista italiano de Cosenza, Breve trattato de 1613; nome italiano nao leva circunflexo"
     },
     {
       "de": "ex-Gini",
@@ -723,12 +687,6 @@
       "de": "Product GINE",
       "para": "Product Gini",
       "exato": false
-    },
-    {
-      "de": "Silvio Luz",
-      "para": "Silvio Luiz",
-      "exato": false,
-      "nota": "o narrador esportivo brasileiro"
     },
     {
       "de": "Danny Hodrick",
@@ -748,28 +706,10 @@
       "nota": "Antonio Kandir, ministro do Planejamento de FHC; Lei Kandir"
     },
     {
-      "de": "ministro Levi",
-      "para": "ministro Levy",
-      "exato": false,
-      "nota": "Joaquim Levy, Fazenda em 2015. Regra estreita de proposito; ver tambem a entrada 'o Levi,'"
-    },
-    {
-      "de": "Lara Rezende",
-      "para": "Lara Resende",
-      "exato": false,
-      "nota": "André Lara Resende, com S; a proposta Larida e dele com Persio Arida"
-    },
-    {
       "de": "IGPDI",
       "para": "IGP-DI",
       "exato": false,
       "nota": "Indice Geral de Precos - Disponibilidade Interna, da FGV"
-    },
-    {
-      "de": "o Levi,",
-      "para": "o Levy,",
-      "exato": false,
-      "nota": "pega 'ministro, o Levi,' que a regra colada nao alcancava"
     },
     {
       "de": "Berrine",
@@ -799,12 +739,6 @@
       "de": "a IOSP",
       "para": "a Iochpe",
       "exato": false
-    },
-    {
-      "de": "Marco Polo",
-      "para": "Marcopolo",
-      "exato": false,
-      "nota": "a fabricante de carrocerias; nome junto"
     }
   ],
   "_fora_de_proposito": [

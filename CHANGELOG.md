@@ -1,5 +1,27 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 08/09/2026 — Fase 3: dicionários por tema
+
+### OBJETIVO
+Dar casa ao termo que só vale num assunto. `Levi → Levy` está certo em economia brasileira e destrói qualquer outro áudio, então ficou de fora do glossário e uma ocorrência escapou por causa de uma vírgula.
+
+### SOLUÇÃO
+`dicionarios/<tema>/` com dois arquivos por tema, o `dicionario.md` com o porquê e o `glossario.json` com o automatismo. O escopo virou pasta, o que dispensa campo novo dentro do JSON e regra de precedência para inventar. Um nível só: tema que cresce demais se divide em dois no mesmo nível e o áudio carrega os dois, o que evita a pergunta que a árvore obriga a responder toda vez — onde mora o termo que serve aos dois ramos.
+
+`dicionarios.py` lê só o bloco do topo de cada dicionário, no formato do frontmatter de skill, e propõe quais usar a partir do contexto declarado. `--tema` entrou no `transcribe_complete.py` e no `corrigir_termos.py`, e aceita mais de um.
+
+A pasta está no `.gitignore`, porque o dicionário é do usuário e o repositório é público. Só `dicionarios/exemplo/` é versionado, e serve de formato — mesmo padrão que já separava `glossario.json` de `glossario.local.json`.
+
+### O QUE MUDA DE COMPORTAMENTO
+Doze termos saíram do glossário público para o de economia, pelo critério de que a forma errada existe em português com outro sentido ou é nome que pode ser de outra pessoa: `Marco Polo`, `o Levi,`, `ministro Levi`, `Silvio Luz`, `bombardeira`, `é o bico`, `Antônio Serra`, `Eric Reinert`, `Lara Rezende`, `Sésamo Seeds` e `urna de polia`, mais a variante `urnas de polia`, que entrou porque foi a regra estreita no singular que deixou passar uma ocorrência. Eles deixam de ser aplicados sozinhos e passam a exigir `--tema economia`. O geral caiu de 145 para 134 e ficou com o que é seguro em qualquer assunto.
+
+### RESULTADO
+O mesmo texto com `ministro, o Levi,`, `Marco Polo` e `Eric Reinert` passa intacto pelo glossário geral e recebe as três correções com `--tema economia`.
+
+### LIÇÃO
+Escopo se resolve melhor por pasta que por campo. A alternativa era marcar cada entrada com um escopo dentro do JSON, o que exigiria regra de precedência e tornaria o arquivo ilegível a olho nu.
+
+
 ## 04/09/2026 — Fase 2: varreduras de suspeita
 
 ### OBJETIVO

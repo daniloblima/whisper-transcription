@@ -242,7 +242,7 @@ def escrever_relatorio(destino, decl, eventos, invariantes, avisos, aplicado):
 
 # ---------------------------------------------------------------- orquestração
 
-def rodar(caminho_decl, dry_run=False):
+def rodar(caminho_decl, dry_run=False, logs=None):
     decl = json.loads(Path(caminho_decl).read_text())
     validar_declaracao(decl)
     alvos = resolver_alvos(decl, Path(caminho_decl).parent)
@@ -306,7 +306,12 @@ def rodar(caminho_decl, dry_run=False):
 
     # Passo 4: backup e escrita.
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    destino = (tocados[0].parent if tocados else alvos[0].parent) / "_correcoes" / stamp
+    # O padrão é ao lado do arquivo, mas nem toda pasta aceita companhia: a de
+    # transcrição de um acervo costuma ser lida por busca, e um backup .md ali
+    # dentro entra nos resultados. Daí o --logs.
+    raiz_log = Path(logs).expanduser() if logs else (
+        tocados[0].parent if tocados else alvos[0].parent) / "_correcoes"
+    destino = raiz_log / stamp
     destino.mkdir(parents=True, exist_ok=True)
 
     if dry_run:
@@ -326,9 +331,11 @@ def main():
     p = argparse.ArgumentParser(description="Aplica correções declaradas em transcrições.")
     p.add_argument("declaracao", help="JSON com as correções")
     p.add_argument("--dry-run", action="store_true", help="mostra sem escrever")
+    p.add_argument("--logs", default=None,
+                   help="pasta para backup e log (padrão: _correcoes ao lado do arquivo)")
     args = p.parse_args()
     try:
-        rodar(args.declaracao, args.dry_run)
+        rodar(args.declaracao, args.dry_run, args.logs)
     except Recusa as e:
         log(f"\nRECUSADO: {e}")
         sys.exit(1)

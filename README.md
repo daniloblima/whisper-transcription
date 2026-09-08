@@ -180,6 +180,29 @@ Se o local não existir, tudo funciona igual.
 python3 corrigir_termos.py ~/Downloads/Transcricoes/pasta/arquivo.md
 ```
 
+### Erro que só vale num assunto → dicionário por tema
+
+`Levi → Levy` está certo numa aula de economia brasileira e destrói qualquer outro
+áudio, onde Levi é nome de gente. Termos assim não cabem no glossário geral e
+vivem em `dicionarios/<tema>/`, carregados só quando você pede.
+
+```bash
+python3 dicionarios.py --listar
+python3 dicionarios.py --sugerir "webinar sobre política industrial e câmbio"
+python3 transcribe_complete.py aula.mp4 --tema economia
+```
+
+Cada tema é uma pasta com dois arquivos: o `dicionario.md`, que guarda o porquê de
+cada decisão com fonte, e o `glossario.json`, com as substituições automáticas. O
+bloco no topo do `.md` é o que permite a ferramenta propor o dicionário certo a
+partir do assunto que você declarar.
+
+Um nível só, sem subtema. Se um tema crescer demais, ele se divide em dois no mesmo
+nível e o áudio carrega os dois.
+
+**A pasta está no `.gitignore`**, porque o dicionário é seu e este repositório é
+público. Só `dicionarios/exemplo/` é versionado, para servir de formato.
+
 ### Erro que depende do contexto → skill `/arrumar-transcricao`
 
 Palavra comum trocada por outra palavra comum ("livro" por "líder", "lixo" por

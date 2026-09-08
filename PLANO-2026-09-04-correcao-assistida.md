@@ -130,7 +130,15 @@ O `glossario.json` da raiz continua sendo o dicionário geral, com o critério q
 
 **Critério de sucesso.** Um áudio novo sobre economia, sem relação com o curso, transcrito com o dicionário do tema carregado, e o relatório mostrando quais termos do tema foram aplicados. E `Levi → Levy` existindo sem quebrar nada.
 
-**Estado:** não iniciada.
+**Estado:** [x] CONCLUÍDA em 08/09/2026. `dicionarios.py` e a pasta `dicionarios/` na raiz, com `--tema` no `transcribe_complete.py` e no `corrigir_termos.py`.
+
+O critério foi cumprido: o mesmo texto com `ministro, o Levi,`, `Marco Polo` e `Eric Reinert` passa intacto pelo glossário geral e recebe as três correções com `--tema economia`.
+
+**Doze termos saíram do glossário público, e essa é a parte que muda comportamento.** O critério foi objetivo: migra o que tem forma errada que existe em português com outro sentido, ou nome que pode ser de outra pessoa. `Marco Polo` para `Marcopolo` valia sempre e agora vale só em economia, o que é o ponto — em qualquer outro áudio ele é o viajante veneziano. O geral caiu de 145 para 134 termos e ficou com o que é seguro em qualquer assunto, do tipo `chumpeteriana` para `schumpeteriana`.
+
+A variante `urnas de polia` entrou no dicionário de economia, porque foi exatamente a regra estreita no singular que deixou passar a ocorrência corrigida hoje.
+
+**A migração do dicionário do doutorado foi por acréscimo, não por corte.** As seções temáticas foram copiadas para `dicionarios/economia/dicionario.md` e o arquivo original ganhou um ponteiro no topo, sem perder nada. As duas cópias divergem com o tempo, então a remoção das seções migradas do arquivo original fica como decisão em aberto.
 
 ---
 
