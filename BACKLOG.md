@@ -109,3 +109,7 @@ Primeiro material que não é aula gravada: 24 conversas por chamada de vídeo, 
 - [x] **Listar ocorrências com contexto antes de aplicar troca de nome.** FEITO em 08/09/2026, `v1.4.0`: o relatório de cada corrida traz o texto em volta de cada ocorrência, e `--dry-run` o gera sem escrever nada. A declaração de correção já pede a contagem, o que protege contra pegar demais ou de menos, mas não mostra o que vai ser trocado. Foi a leitura manual das 30 linhas que salvou uma citação legítima.
 - [ ] **Diarização como operação de primeira classe.** Trocar o marcador genérico do export pelo nome de cada falante é manual hoje, e as três conferências que a fecham também: cada marcador virou o seu na mesma quantidade, não sobrou marcador antigo, o texto fora dos marcadores ficou idêntico. Foram 2.855 marcadores em 24 arquivos.
 - [ ] **Sinalizar alucinação em outro idioma.** Em trecho de silêncio, conexão ruim ou fala sobreposta, o motor produz falas curtas em russo, espanhol, italiano e holandês no meio do português. É ruído estrutural, não erro de palavra, e não pode ser apagado automaticamente, porque apagar fala é o que o aplicador recusa com razão. Cabe sinalizar e deixar a decisão com o dono do material.
+
+## Prioridade quando houver cota (20/10/2026)
+
+- Fase 4, a fusão do fluxo: transcrever, diarizar, pôr minutagem e arrumar como produto único, tanto no app quanto no pedido feito numa sessão do Claude. Desenho e decisões pendentes no fim do `PLANO-2026-09-04-correcao-assistida.md`, seção "FASE 4 — desenho revisto".

@@ -739,6 +739,21 @@
       "de": "a IOSP",
       "para": "a Iochpe",
       "exato": false
+    },
+    {
+      "de": "devagando",
+      "para": "divagando",
+      "exato": false
+    },
+    {
+      "de": "Startup Base",
+      "para": "StartupBase",
+      "exato": false
+    },
+    {
+      "de": "B Startups",
+      "para": "Abstartups",
+      "exato": false
     }
   ],
   "_fora_de_proposito": [

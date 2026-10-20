@@ -1,5 +1,20 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 20/10/2026 — a arrumação que o usuário esperava e o fluxo não fazia
+
+### PROBLEMA
+Uma sessão da InfraCore transcreveu um áudio pela aplicação, e a arrumação da transcrição não rodou. Danilo esperava o texto já arrumado, com os dicionários por tema aplicados.
+
+### ANÁLISE
+Nada quebrou. A aplicação para no passo 5, que é a troca pelo glossário geral, e sempre parou aí. Os dicionários por tema só entram com `--tema`, que nem o app nem as sessões passam. As varreduras não estão no fluxo. A arrumação é a skill `/arrumar-transcricao`, que só roda quando chamada. A janela do app pergunta só o número de falantes e não pede tema nem contexto. Tudo isso era a Fase 4 do plano de 04/09, que nunca foi iniciada.
+
+### DECISÃO
+Nenhum código. O desenho da Fase 4 foi revisto e registrado no fim do `PLANO-2026-09-04-correcao-assistida.md`, para ser executado quando houver cota da assinatura. O princípio é que as duas portas de uso, arrastar para o app e pedir numa sessão do Claude, percorram o mesmo fluxo até a arrumação. No app, a arrumação roda num `claude -p`. Na sessão, a própria sessão arruma, porque já tem o contexto. Danilo respondeu às quatro decisões no mesmo dia: o app arruma sempre, inclusive sem contexto, sobretudo a pontuação; o teto para arrumar sem perguntar é de 30 minutos; o modelo é o que der a melhor arrumação, medido entre Opus e Sonnet; e o dicionário da InfraCore nasce na execução, a partir das correções feitas à mão em 20/10.
+
+### LIÇÃO
+Plano com fase não iniciada precisa estar visível para quem usa a ferramenta, e não só para quem a desenvolve. Danilo contava com a Fase 4 como pronta porque as fases 1 a 3 tinham fechado em sequência.
+
+
 ## 08/09/2026 — a trava que não protegia, e dizia que protegia
 
 ### PROBLEMA

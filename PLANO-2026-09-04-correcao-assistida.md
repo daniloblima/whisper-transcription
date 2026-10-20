@@ -161,7 +161,7 @@ Sem contexto declarado, o caminho para em 4 e entrega a transcrição. É o que 
 
 **Critério de sucesso.** Arrastar um arquivo e chegar ao texto conferido sem que eu precise reconstruir contexto nenhum no meio, e sem terminal em nenhum ponto.
 
-**Estado:** não iniciada.
+**Estado:** não iniciada. Desenho revisto em 20/10/2026 na seção "FASE 4 — desenho revisto", no fim deste documento.
 
 ---
 
@@ -205,3 +205,89 @@ Sem ordem interna definida, a decidir quando as anteriores fecharem.
 ---
 
 *Aberto em 04/09/2026. Decisões desta data registradas acima; o detalhe de cada fase entra no `CHANGELOG.md` conforme for executada.*
+
+---
+
+## FASE 4 — desenho revisto em 20/10/2026, a executar quando houver cota
+
+Proposta registrada a pedido de Danilo, sem aprovação ainda e sem código. Ele não vai gastar a assinatura nisso agora, porque os tokens estão indo para outra frente. Esta seção existe para a sessão que pegar a Fase 4 começar daqui, sem refazer o diagnóstico.
+
+### O que motivou
+
+Em 20/10/2026 uma sessão da InfraCore transcreveu um áudio com a aplicação, e Danilo esperava receber o texto já arrumado. Ele achava que a aplicação já fazia transcrição, diarização, minutagem e arrumação, com os dicionários por tema. A arrumação não rodou, e a conferência mostrou por quê.
+
+A aplicação para no passo 5 do `transcribe_complete.py`, que é a troca determinística pelo glossário geral, com 134 termos. Três peças ficaram fora do fluxo automático, embora existam:
+- Os dicionários por tema. Só existe o de economia, e ele entra apenas com `--tema`, que nem o app nem as sessões passam.
+- As varreduras de suspeita (`varrer_suspeitas.py`), que ninguém chama depois da transcrição.
+- A arrumação com contexto, que é a skill `/arrumar-transcricao` e só roda quando uma sessão do Claude a chama.
+
+Outro ponto diverge do que Danilo lembrava. A janela do app pergunta só quantas pessoas falam. Ela não pergunta tema nem contexto. O campo de contexto estava previsto aqui na Fase 3 e na Fase 4 e nunca chegou ao app.
+
+### O princípio
+
+Danilo usa a aplicação por duas portas, e as duas precisam percorrer o mesmo fluxo:
+
+1. Arrastando o arquivo para o `TranscribeVideo.app`, quando escolhe na janela o número de falantes e pode declarar o tema.
+2. Pedindo a uma sessão do Claude que transcreva, como manda o `CLAUDE.md` global desde 20/10/2026. Nessa porta ele não seleciona nada.
+
+Transcrever, diarizar, pôr minutagem e arrumar formam um produto só. Transcrição entregue sem arrumação é entrega pela metade, nas duas portas.
+
+### O fluxo único
+
+Os passos são os mesmos nas duas portas. Muda só quem faz a arrumação.
+
+1. Extrair o áudio, como hoje.
+2. Transcrever, como hoje.
+3. Diarizar, como hoje.
+4. Mesclar com minutagem, como hoje.
+5. Aplicar o glossário geral e os dicionários dos temas escolhidos, pelo `aplicar_correcoes.py`, que tem backup, log e travas. Conferir se o passo 5 atual (`corrigir_termos.py`) já passa pelo aplicador ou se ainda escreve direto.
+6. Rodar as varreduras e gravar o dossiê ao lado da transcrição.
+7. Arrumar a transcrição, começando pelo dossiê e não pelo arquivo cru. Toda troca passa pelo aplicador da Fase 1.
+8. Propor os termos novos com o destino sugerido, que pode ser o glossário geral, um tema existente ou um tema novo. Só entram com o sim de Danilo.
+9. Gravar o carimbo de procedência no cabeçalho: versão, modelo, temas aplicados, se houve arrumação e por quem.
+
+A versão bruta fica sempre ao lado da arrumada, nunca por baixo dela. Se a arrumação falhar, a transcrição com minutagem continua entregue.
+
+### Porta 1 — arrastar para o app
+
+- A janela ganha um campo curto de contexto, livre e opcional, depois da escolha de falantes. Exemplos: "reunião InfraCore, energia" ou "aula do Paulo Gala".
+- O `dicionarios.py` lê o contexto e escolhe os temas. Sem contexto, entra só o glossário geral.
+- O passo 7 roda numa sessão `claude -p` disparada pelo próprio app, em segundo plano, com a skill `/arrumar-transcricao` e as ferramentas mínimas. O contexto declarado entra no prompt.
+- Custo: gasta a cota da assinatura de Danilo a cada transcrição arrastada. Por isso a arrumação precisa de um interruptor, ligado por padrão como ele pediu, e de um teto para áudio longo, perguntado na janela antes de disparar.
+- Danilo não abre terminal. O aviso de fim e o de falha chegam por notificação do macOS, e o arquivo abre sozinho ou fica na pasta de sempre.
+
+### Porta 2 — pedido numa sessão do Claude
+
+- A sessão que pediu a transcrição faz a arrumação ela mesma, porque já conhece o assunto, as pessoas e o porquê do áudio. Disparar um `claude -p` por fora jogaria esse contexto fora e gastaria tokens em dobro.
+- A sessão escolhe os temas pelo que sabe da conversa e os passa com `--tema`. Se não houver dicionário para o assunto, ela segue com o geral e anota no fim que um tema novo pode nascer, por exemplo o da InfraCore.
+- O `transcribe_complete.py` ganha um modo de chamada por sessão, que roda os passos 1 a 6, pula o `claude -p` e termina imprimindo o próximo passo em linguagem direta: o caminho do dossiê e a instrução de rodar `/arrumar-transcricao` sobre ele. A sessão lê essa saída, e é isso que impede o fluxo de parar no meio, como aconteceu na InfraCore.
+- O `CLAUDE.md` global e a skill dizem a mesma coisa, que transcrição pedida em sessão só termina depois da arrumação.
+
+### Decisões que ficam com Danilo antes do código
+
+1. Na porta 1, a arrumação roda também sem contexto declarado, só com o glossário geral? O plano de 04/09 parava no passo 4 sem contexto. O pedido de 20/10 é que ela seja sempre automática.
+2. Qual teto de duração ou de custo faz o app perguntar antes de arrumar um áudio longo.
+3. Qual modelo roda o `claude -p` da porta 1. A proposta é o Sonnet, como nas sessões em lote do portal.
+4. Se nasce já um dicionário da InfraCore, a partir das correções que a sessão de 20/10 fez à mão.
+
+### Critério de sucesso
+
+- Porta 1: arrastar um áudio de reunião, escrever o contexto em uma linha e receber o texto arrumado, com minutagem, a versão bruta ao lado e o log das trocas, sem terminal em nenhum ponto.
+- Porta 2: pedir numa sessão "transcreve este áudio" e receber o texto já arrumado, sem precisar pedir a arrumação.
+
+### Antes de começar
+
+Ler o `CHANGELOG.md` a partir de 04/09/2026, o `FORMATO-CORRECOES.md`, o `PADROES-DE-ERRO.md` e o `LICOES-APRENDIDAS.md`. O `glossario.json` tinha 15 linhas acrescentadas e sem commit em 20/10/2026, provavelmente pela sessão da InfraCore. Conferir de onde vieram antes de mexer nele.
+
+### Respostas de Danilo às quatro decisões (20/10/2026, 15h14)
+
+Sobre a porta 2, Danilo explicou o porquê da diferença. A sessão que pede a transcrição já sabe o tema e o motivo do pedido, e os termos já gravitam nesse universo. O app não sabe nada disso, e por isso a janela de contexto foi pensada: ela entrega ao app um pouco do que a sessão já tem.
+
+O campo de contexto estava previsto desde 04/09, nas fases 3 e 4 deste plano. Só não chegou ao app.
+
+1. **Arrumar sem contexto: sim.** O app arruma sempre, porque há correção que vale para qualquer assunto. A principal é a pontuação, que Danilo aponta como um dos defeitos graves de entendimento da transcrição. A caixa de contexto continua opcional. Uma linha dizendo o tema, onde ele estava ou de onde veio o áudio já basta para a sessão em segundo plano tirar as dúvidas de termo.
+2. **Teto: 30 minutos.** Áudio de até 30 minutos arruma sem perguntar. Acima disso, o app avisa antes de disparar a arrumação. O motivo é que a cota da assinatura às vezes está no fim da janela de uso, e Danilo pode preferir esperar algumas horas. O aviso precisa deixar adiar a arrumação sem perder a transcrição, que é entregue de qualquer forma.
+3. **Modelo: o que der a melhor arrumação.** Danilo não sabe qual é e disse que uma transcrição mal arrumada custa mais para ele que alguns tokens a mais. Fica descartada a proposta de usar o Sonnet por economia. A proposta passa a ser o Opus. Antes de fixar, arrumar o mesmo áudio com os dois e comparar contra uma versão conferida, porque a escolha precisa sair de medição.
+4. **Dicionário da InfraCore: nasce na execução da Fase 4.** Ainda não existe dicionário nenhum além do de economia. O primeiro passo é procurar as correções que a sessão da InfraCore fez à mão em 20/10/2026, e conferir se as 15 linhas novas do `glossario.json` vieram dela. O que for específico da InfraCore vai para `dicionarios/infracore/`, e só o que vale para qualquer assunto fica no geral.
+
+Conferido às 15h40 de 20/10/2026: as 15 linhas novas do `glossario.json` são três termos seguros para qualquer assunto (`devagando`, `Startup Base` e `B Startups`), ligados a startups e não à InfraCore. Entraram no commit desta data. As correções da InfraCore continuam a localizar.
