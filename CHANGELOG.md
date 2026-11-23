@@ -1,5 +1,23 @@
 # CHANGELOG - Sistema de Transcrição com Diarização
 
+## 19/11/2026 — MP3 de podcast derruba a extração de áudio (bug aberto, sem correção)
+
+### PROBLEMA
+Ao transcrever um episódio de podcast em MP3 baixado do Megaphone (Bill Gurley, 62 min, ID3 v2.3), o script quebrou no passo 1, antes de chegar ao Whisper, com `UnicodeDecodeError: 'utf-8' codec can't decode bytes in position 3787-3788: invalid continuation byte`, dentro de `extract_audio()`.
+
+### ANÁLISE
+A chamada `subprocess.run(cmd, capture_output=True, text=True)` (linha 275, e o mesmo padrão nas linhas 61, 90, 126, 142 e 313) decodifica a saída do ffmpeg como UTF-8 estrito. O ffmpeg imprime no stderr os metadados do arquivo, e os metadados desse MP3 têm bytes que não são UTF-8 válido. Causa provável, não confirmada byte a byte: tag ID3 em Latin-1 ou um campo binário impresso como texto. O erro nasce na leitura do stderr, não na conversão, que provavelmente teria dado certo.
+
+### CONTORNO USADO
+Converter antes, sem metadados, e passar o WAV ao script: `ffmpeg -nostdin -loglevel error -y -i entrada.mp3 -map_metadata -1 -ac 1 -ar 16000 saida.wav`. Com isso a transcrição rodou.
+
+### CORREÇÃO PROPOSTA (não aplicada)
+Acrescentar `errors='replace'` às chamadas `subprocess.run(..., text=True)` que leem saída do ffmpeg e do ffprobe, ou passar `-loglevel error` ao ffmpeg em `extract_audio()`. A primeira cobre todos os casos. Não foi aplicada nesta sessão, que trabalhava em outra pasta, e fica para quando houver sessão nesta.
+
+### LIÇÃO
+Saída de ferramenta externa não é texto confiável. Arquivo vindo da internet traz metadados em qualquer codificação, e `text=True` sem `errors=` transforma um aviso inofensivo em falha da execução inteira.
+
+
 ## 20/10/2026 — a arrumação que o usuário esperava e o fluxo não fazia
 
 ### PROBLEMA
